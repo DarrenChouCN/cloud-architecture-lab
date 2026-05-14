@@ -1,0 +1,216 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Cognito authentication stack for the multi-cloud FaaS platform.
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Project name used for resource naming.
+    Default: multi-cloud-faas
+
+  Environment:
+    Type: String
+    Description: Deployment environment.
+    Default: dev
+    AllowedValues:
+      - dev
+      - test
+      - prod
+
+  AuthDomainPrefix:
+    Type: String
+    Description: Unique Cognito Hosted UI domain prefix.
+    AllowedPattern: "^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$"
+    ConstraintDescription: Use 3-63 lowercase letters, numbers, and hyphens. Must start and end with a letter or number.
+
+  CallbackUrl:
+    Type: String
+    Description: Frontend callback URL after successful login.
+    Default: http://localhost:3000/callback
+
+  LogoutUrl:
+    Type: String
+    Description: Frontend URL after logout.
+    Default: http://localhost:3000/logout
+
+  UserPoolDeletionProtection:
+    Type: String
+    Description: Use ACTIVE for long-lived environments. Use INACTIVE for lab testing.
+    Default: INACTIVE
+    AllowedValues:
+      - ACTIVE
+      - INACTIVE
+
+Resources:
+  AppUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub "${ProjectName}-${Environment}-user-pool"
+
+      # Use email as the login username.
+      UsernameAttributes:
+        - email
+
+      UsernameConfiguration:
+        CaseSensitive: false
+
+      # Verify email during sign-up.
+      AutoVerifiedAttributes:
+        - email
+
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+
+      # Keep this INACTIVE during lab testing.
+      DeletionProtection: !Ref UserPoolDeletionProtection
+
+      MfaConfiguration: "OFF"
+
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireUppercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          TemporaryPasswordValidityDays: 7
+
+      UserAttributeUpdateSettings:
+        AttributesRequireVerificationBeforeUpdate:
+          - email
+
+      VerificationMessageTemplate:
+        DefaultEmailOption: CONFIRM_WITH_CODE
+        EmailSubject: "Your verification code"
+        EmailMessage: "Your verification code is {####}"
+
+      # Required attributes shown in Hosted UI sign-up.
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Required: true
+          Mutable: true
+
+        - Name: given_name
+          AttributeDataType: String
+          Required: true
+          Mutable: true
+
+        - Name: family_name
+          AttributeDataType: String
+          Required: true
+          Mutable: true
+
+      UserPoolTags:
+        Project: !Ref ProjectName
+        Environment: !Ref Environment
+        ManagedBy: SAM
+
+  AppUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub "${ProjectName}-${Environment}-web-client"
+      UserPoolId: !Ref AppUserPool
+
+      # Frontend apps must not use a client secret.
+      GenerateSecret: false
+
+      # Enable Hosted UI OAuth flow.
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows:
+        - code
+
+      AllowedOAuthScopes:
+        - openid
+        - email
+        - profile
+
+      SupportedIdentityProviders:
+        - COGNITO
+
+      CallbackURLs:
+        - !Ref CallbackUrl
+
+      LogoutURLs:
+        - !Ref LogoutUrl
+
+      DefaultRedirectURI: !Ref CallbackUrl
+
+      # Useful later if you test login through SDK.
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+
+      AccessTokenValidity: 1
+      IdTokenValidity: 1
+      RefreshTokenValidity: 7
+
+      TokenValidityUnits:
+        AccessToken: hours
+        IdToken: hours
+        RefreshToken: days
+
+      EnableTokenRevocation: true
+      PreventUserExistenceErrors: ENABLED
+
+      ReadAttributes:
+        - email
+        - email_verified
+        - given_name
+        - family_name
+
+      WriteAttributes:
+        - email
+        - given_name
+        - family_name
+
+  AppUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Ref AuthDomainPrefix
+      UserPoolId: !Ref AppUserPool
+
+Outputs:
+  UserPoolId:
+    Description: Cognito User Pool ID.
+    Value: !Ref AppUserPool
+
+  UserPoolArn:
+    Description: Cognito User Pool ARN. API stack will use this later.
+    Value: !GetAtt AppUserPool.Arn
+
+  UserPoolClientId:
+    Description: Cognito App Client ID.
+    Value: !Ref AppUserPoolClient
+
+  HostedUIDomain:
+    Description: Cognito Hosted UI domain.
+    Value: !Sub "https://${AuthDomainPrefix}.auth.${AWS::Region}.amazoncognito.com"
+
+  HostedUILoginUrl:
+    Description: Hosted UI login URL for manual testing.
+    Value: !Sub
+      - "https://${DomainPrefix}.auth.${AWS::Region}.amazoncognito.com/oauth2/authorize?client_id=${ClientId}&response_type=code&scope=openid+email+profile&redirect_uri=${RedirectUri}"
+      - DomainPrefix: !Ref AuthDomainPrefix
+        ClientId: !Ref AppUserPoolClient
+        RedirectUri: !Ref CallbackUrl
+
+  HostedUILogoutUrl:
+    Description: Hosted UI logout URL for manual testing.
+    Value: !Sub
+      - "https://${DomainPrefix}.auth.${AWS::Region}.amazoncognito.com/logout?client_id=${ClientId}&logout_uri=${LogoutUri}"
+      - DomainPrefix: !Ref AuthDomainPrefix
+        ClientId: !Ref AppUserPoolClient
+        LogoutUri: !Ref LogoutUrl
+
+  UserPoolIssuer:
+    Description: Cognito JWT issuer URL.
+    Value: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${AppUserPool}"
+
+  UserPoolJwksUrl:
+    Description: Cognito public key URL for JWT validation.
+    Value: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${AppUserPool}/.well-known/jwks.json"

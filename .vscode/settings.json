@@ -1,0 +1,27 @@
+{
+  "yaml.customTags": [
+    "!Ref scalar",
+    "!Sub scalar",
+    "!Sub sequence",
+    "!GetAtt scalar",
+    "!GetAtt sequence",
+    "!Join sequence",
+    "!Select sequence",
+    "!Split sequence",
+    "!FindInMap sequence",
+    "!ImportValue scalar",
+    "!ImportValue mapping",
+    "!Base64 scalar",
+    "!Base64 mapping",
+    "!GetAZs scalar",
+    "!GetAZs sequence",
+    "!If sequence",
+    "!Equals sequence",
+    "!Not sequence",
+    "!And sequence",
+    "!Or sequence",
+    "!Condition scalar",
+    "!Cidr sequence"
+  ],
+  "yaml.format.enable": true
+}

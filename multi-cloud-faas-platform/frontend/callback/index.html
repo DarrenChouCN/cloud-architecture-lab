@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login Callback</title>
+</head>
+<body>
+  <h1>Login callback received</h1>
+  <p id="status">Exchanging authorization code for tokens...</p>
+
+  <script>
+    const cognitoDomain = "https://shaomin-faas-dev.auth.us-east-1.amazoncognito.com";
+    const clientId = "2ffrs1pe6rlkb6jf2mpopbqhfq";
+    const redirectUri = "http://localhost:3000/callback";
+
+    const status = document.getElementById("status");
+
+    async function exchangeCodeForTokens(code) {
+      const response = await fetch(`${cognitoDomain}/oauth2/token`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({
+          grant_type: "authorization_code",
+          client_id: clientId,
+          code: code,
+          redirect_uri: redirectUri
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText);
+      }
+
+      return response.json();
+    }
+
+    async function main() {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+
+      if (!code) {
+        status.textContent = "No authorization code found.";
+        return;
+      }
+
+      try {
+        const tokens = await exchangeCodeForTokens(code);
+
+        sessionStorage.setItem("id_token", tokens.id_token);
+        sessionStorage.setItem("access_token", tokens.access_token);
+        sessionStorage.setItem("refresh_token", tokens.refresh_token);
+
+        status.textContent = "Login successful. Redirecting...";
+
+        window.location.href = "/index.html";
+      } catch (error) {
+        console.error("Token exchange failed:", error);
+        status.textContent = "Token exchange failed. Check console for details.";
+      }
+    }
+
+    main();
+  </script>
+</body>
+</html>

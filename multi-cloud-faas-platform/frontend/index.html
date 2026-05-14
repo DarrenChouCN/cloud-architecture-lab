@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Multi-Cloud FaaS Platform</title>
+</head>
+<body>
+  <h1>Multi-Cloud FaaS Platform</h1>
+
+  <div id="loggedOutView">
+    <p>Please sign in to continue.</p>
+    <button id="loginButton">Sign in with Cognito</button>
+  </div>
+
+  <div id="loggedInView" style="display: none;">
+    <p id="welcomeMessage">You are signed in.</p>
+
+    <h2>User Information</h2>
+    <p><strong>Email:</strong> <span id="email"></span></p>
+    <p><strong>First name:</strong> <span id="givenName"></span></p>
+    <p><strong>Last name:</strong> <span id="familyName"></span></p>
+    <p><strong>User ID:</strong> <span id="sub"></span></p>
+
+    <button id="logoutButton">Sign out</button>
+  </div>
+
+  <script>
+    const cognitoDomain = "https://shaomin-faas-dev.auth.us-east-1.amazoncognito.com";
+    const clientId = "2ffrs1pe6rlkb6jf2mpopbqhfq";
+    const redirectUri = "http://localhost:3000/callback";
+    const logoutUri = "http://localhost:3000/index.html";
+
+    const loggedOutView = document.getElementById("loggedOutView");
+    const loggedInView = document.getElementById("loggedInView");
+
+    function decodeJwt(token) {
+      const payload = token.split(".")[1];
+      const normalizedPayload = payload.replace(/-/g, "+").replace(/_/g, "/");
+      return JSON.parse(atob(normalizedPayload));
+    }
+
+    function showLoggedInView() {
+      const idToken = sessionStorage.getItem("id_token");
+
+      if (!idToken) {
+        loggedOutView.style.display = "block";
+        loggedInView.style.display = "none";
+        return;
+      }
+
+      const claims = decodeJwt(idToken);
+
+      document.getElementById("email").textContent = claims.email || "";
+      document.getElementById("givenName").textContent = claims.given_name || "";
+      document.getElementById("familyName").textContent = claims.family_name || "";
+      document.getElementById("sub").textContent = claims.sub || "";
+
+      loggedOutView.style.display = "none";
+      loggedInView.style.display = "block";
+    }
+
+    document.getElementById("loginButton").addEventListener("click", () => {
+      const loginUrl =
+        `${cognitoDomain}/oauth2/authorize?` +
+        `client_id=${clientId}` +
+        `&response_type=code` +
+        `&scope=openid+email+profile` +
+        `&redirect_uri=${encodeURIComponent(redirectUri)}`;
+
+      window.location.href = loginUrl;
+    });
+
+    document.getElementById("logoutButton").addEventListener("click", () => {
+      sessionStorage.clear();
+
+      const logoutUrl =
+        `${cognitoDomain}/logout?` +
+        `client_id=${clientId}` +
+        `&logout_uri=${encodeURIComponent(logoutUri)}`;
+
+      window.location.href = logoutUrl;
+    });
+
+    showLoggedInView();
+  </script>
+</body>
+</html>
