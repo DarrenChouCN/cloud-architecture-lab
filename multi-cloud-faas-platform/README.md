@@ -5,6 +5,8 @@ cd multi-cloud-faas-platform
 
 sam validate --template-file aws/template.yaml
 
+sam build --template-file aws/template.yaml
+
 sam deploy \
   --template-file aws/template.yaml \
   --stack-name multi-cloud-faas-dev-aws \

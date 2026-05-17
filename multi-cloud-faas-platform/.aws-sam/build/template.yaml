@@ -1,0 +1,201 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS root SAM template for the multi-cloud FaaS platform.
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Project name used for resource naming.
+    Default: multi-cloud-faas
+  Environment:
+    Type: String
+    Description: Deployment environment.
+    Default: dev
+    AllowedValues:
+    - dev
+    - test
+    - prod
+  AuthDomainPrefix:
+    Type: String
+    Description: Unique Cognito Hosted UI domain prefix.
+    AllowedPattern: ^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$
+    ConstraintDescription: Use 3-63 lowercase letters, numbers, and hyphens. Must
+      start and end with a letter or number.
+  CallbackUrl:
+    Type: String
+    Description: Frontend callback URL after successful login.
+    Default: http://localhost:3000/callback
+  LogoutUrl:
+    Type: String
+    Description: Frontend URL after logout.
+    Default: http://localhost:3000/logout
+  UserPoolDeletionProtection:
+    Type: String
+    Description: Use ACTIVE for long-lived environments. Use INACTIVE for lab testing.
+    Default: INACTIVE
+    AllowedValues:
+    - ACTIVE
+    - INACTIVE
+  ApiCorsAllowedOrigins:
+    Type: CommaDelimitedList
+    Description: Allowed frontend origins for API Gateway CORS.
+    Default: http://localhost:3000,http://localhost:5173
+Resources:
+  AuthStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: AuthStack/template.yaml
+      Parameters:
+        ProjectName:
+          Ref: ProjectName
+        Environment:
+          Ref: Environment
+        AuthDomainPrefix:
+          Ref: AuthDomainPrefix
+        CallbackUrl:
+          Ref: CallbackUrl
+        LogoutUrl:
+          Ref: LogoutUrl
+        UserPoolDeletionProtection:
+          Ref: UserPoolDeletionProtection
+      Tags:
+        Project:
+          Ref: ProjectName
+        Environment:
+          Ref: Environment
+        Layer: auth
+    Metadata:
+      SamResourceId: AuthStack
+  StorageStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: StorageStack/template.yaml
+      Parameters:
+        ProjectName:
+          Ref: ProjectName
+        Environment:
+          Ref: Environment
+      Tags:
+        Project:
+          Ref: ProjectName
+        Environment:
+          Ref: Environment
+        Layer: storage
+    Metadata:
+      SamResourceId: StorageStack
+  DataStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: DataStack/template.yaml
+      Parameters:
+        ProjectName:
+          Ref: ProjectName
+        Environment:
+          Ref: Environment
+      Tags:
+        Project:
+          Ref: ProjectName
+        Environment:
+          Ref: Environment
+        Layer: data
+    Metadata:
+      SamResourceId: DataStack
+  ApiStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: ApiStack/template.yaml
+      Parameters:
+        ProjectName:
+          Ref: ProjectName
+        Environment:
+          Ref: Environment
+        UserPoolIssuer:
+          Fn::GetAtt:
+          - AuthStack
+          - Outputs.UserPoolIssuer
+        UserPoolClientId:
+          Fn::GetAtt:
+          - AuthStack
+          - Outputs.UserPoolClientId
+        CorsAllowedOrigins:
+          Fn::Join:
+          - ','
+          - Ref: ApiCorsAllowedOrigins
+        StorageBucketName:
+          Fn::GetAtt:
+          - StorageStack
+          - Outputs.StorageBucketName
+        AssetsPrefix:
+          Fn::GetAtt:
+          - StorageStack
+          - Outputs.AssetsPrefix
+        MediaTableName:
+          Fn::GetAtt:
+          - DataStack
+          - Outputs.MediaTableName
+        MediaTableArn:
+          Fn::GetAtt:
+          - DataStack
+          - Outputs.MediaTableArn
+      Tags:
+        Project:
+          Ref: ProjectName
+        Environment:
+          Ref: Environment
+        Layer: api
+    Metadata:
+      SamResourceId: ApiStack
+Outputs:
+  UserPoolId:
+    Description: Cognito User Pool ID.
+    Value:
+      Fn::GetAtt:
+      - AuthStack
+      - Outputs.UserPoolId
+  UserPoolClientId:
+    Description: Cognito App Client ID.
+    Value:
+      Fn::GetAtt:
+      - AuthStack
+      - Outputs.UserPoolClientId
+  HostedUIDomain:
+    Description: Cognito Hosted UI domain.
+    Value:
+      Fn::GetAtt:
+      - AuthStack
+      - Outputs.HostedUIDomain
+  HostedUILoginUrl:
+    Description: Cognito Hosted UI login URL.
+    Value:
+      Fn::GetAtt:
+      - AuthStack
+      - Outputs.HostedUILoginUrl
+  HostedUILogoutUrl:
+    Description: Cognito Hosted UI logout URL.
+    Value:
+      Fn::GetAtt:
+      - AuthStack
+      - Outputs.HostedUILogoutUrl
+  ApiEndpoint:
+    Description: API Gateway HTTP API endpoint.
+    Value:
+      Fn::GetAtt:
+      - ApiStack
+      - Outputs.ApiEndpoint
+  StorageBucketName:
+    Description: S3 bucket name for private media assets.
+    Value:
+      Fn::GetAtt:
+      - StorageStack
+      - Outputs.StorageBucketName
+  AssetsPrefix:
+    Description: S3 prefix for private media assets.
+    Value:
+      Fn::GetAtt:
+      - StorageStack
+      - Outputs.AssetsPrefix
+  MediaTableName:
+    Description: DynamoDB table name for media metadata.
+    Value:
+      Fn::GetAtt:
+      - DataStack
+      - Outputs.MediaTableName

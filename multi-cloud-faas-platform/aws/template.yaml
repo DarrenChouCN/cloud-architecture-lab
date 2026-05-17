@@ -41,6 +41,11 @@ Parameters:
       - ACTIVE
       - INACTIVE
 
+  ApiCorsAllowedOrigins:
+    Type: CommaDelimitedList
+    Description: Allowed frontend origins for API Gateway CORS.
+    Default: "http://localhost:3000,http://localhost:5173"
+
 Resources:
   AuthStack:
     Type: AWS::Serverless::Application
@@ -58,14 +63,56 @@ Resources:
         Environment: !Ref Environment
         Layer: auth
 
+  StorageStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: infra/storage/template.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        Environment: !Ref Environment
+      Tags:
+        Project: !Ref ProjectName
+        Environment: !Ref Environment
+        Layer: storage
+
+  DataStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: infra/data/template.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        Environment: !Ref Environment
+      Tags:
+        Project: !Ref ProjectName
+        Environment: !Ref Environment
+        Layer: data
+
+  ApiStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: infra/api/template.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        Environment: !Ref Environment
+
+        UserPoolIssuer: !GetAtt AuthStack.Outputs.UserPoolIssuer
+        UserPoolClientId: !GetAtt AuthStack.Outputs.UserPoolClientId
+        CorsAllowedOrigins: !Join [",", !Ref ApiCorsAllowedOrigins]
+
+        StorageBucketName: !GetAtt StorageStack.Outputs.StorageBucketName
+        AssetsPrefix: !GetAtt StorageStack.Outputs.AssetsPrefix
+
+        MediaTableName: !GetAtt DataStack.Outputs.MediaTableName
+        MediaTableArn: !GetAtt DataStack.Outputs.MediaTableArn
+      Tags:
+        Project: !Ref ProjectName
+        Environment: !Ref Environment
+        Layer: api
+
 Outputs:
   UserPoolId:
     Description: Cognito User Pool ID.
     Value: !GetAtt AuthStack.Outputs.UserPoolId
-
-  UserPoolArn:
-    Description: Cognito User Pool ARN.
-    Value: !GetAtt AuthStack.Outputs.UserPoolArn
 
   UserPoolClientId:
     Description: Cognito App Client ID.
@@ -76,17 +123,25 @@ Outputs:
     Value: !GetAtt AuthStack.Outputs.HostedUIDomain
 
   HostedUILoginUrl:
-    Description: Hosted UI login URL.
+    Description: Cognito Hosted UI login URL.
     Value: !GetAtt AuthStack.Outputs.HostedUILoginUrl
 
   HostedUILogoutUrl:
-    Description: Hosted UI logout URL.
+    Description: Cognito Hosted UI logout URL.
     Value: !GetAtt AuthStack.Outputs.HostedUILogoutUrl
 
-  UserPoolIssuer:
-    Description: Cognito JWT issuer URL.
-    Value: !GetAtt AuthStack.Outputs.UserPoolIssuer
+  ApiEndpoint:
+    Description: API Gateway HTTP API endpoint.
+    Value: !GetAtt ApiStack.Outputs.ApiEndpoint
 
-  UserPoolJwksUrl:
-    Description: Cognito public key URL for JWT validation.
-    Value: !GetAtt AuthStack.Outputs.UserPoolJwksUrl
+  StorageBucketName:
+    Description: S3 bucket name for private media assets.
+    Value: !GetAtt StorageStack.Outputs.StorageBucketName
+
+  AssetsPrefix:
+    Description: S3 prefix for private media assets.
+    Value: !GetAtt StorageStack.Outputs.AssetsPrefix
+
+  MediaTableName:
+    Description: DynamoDB table name for media metadata.
+    Value: !GetAtt DataStack.Outputs.MediaTableName

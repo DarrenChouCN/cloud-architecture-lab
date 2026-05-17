@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: S3 storage layer for the multi-cloud FaaS platform.
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Project name used for resource naming.
+    Default: multi-cloud-faas
+  Environment:
+    Type: String
+    Description: Deployment environment.
+    Default: dev
+    AllowedValues:
+    - dev
+    - test
+    - prod
+  WebPrefix:
+    Type: String
+    Description: S3 key prefix for static frontend files.
+    Default: web/
+  AssetsPrefix:
+    Type: String
+    Description: S3 key prefix for private image assets.
+    Default: assets/
+Resources:
+  StorageBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Fn::Sub: ${ProjectName}-${Environment}-storage-${AWS::AccountId}-${AWS::Region}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+        - ObjectOwnership: BucketOwnerEnforced
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+        - ServerSideEncryptionByDefault:
+            SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+        - Id: AbortIncompleteMultipartUploads
+          Status: Enabled
+          AbortIncompleteMultipartUpload:
+            DaysAfterInitiation: 7
+        - Id: ExpireNoncurrentObjectVersions
+          Status: Enabled
+          NoncurrentVersionExpirationInDays: 30
+      Tags:
+      - Key: Project
+        Value:
+          Ref: ProjectName
+      - Key: Environment
+        Value:
+          Ref: Environment
+      - Key: Layer
+        Value: storage
+Outputs:
+  StorageBucketName:
+    Description: Name of the S3 bucket used for web files and private assets.
+    Value:
+      Ref: StorageBucket
+  StorageBucketArn:
+    Description: ARN of the S3 storage bucket.
+    Value:
+      Fn::GetAtt:
+      - StorageBucket
+      - Arn
+  StorageBucketRegionalDomainName:
+    Description: Regional domain name of the S3 bucket for CloudFront origin configuration.
+    Value:
+      Fn::GetAtt:
+      - StorageBucket
+      - RegionalDomainName
+  WebPrefix:
+    Description: Prefix used for static frontend files.
+    Value:
+      Ref: WebPrefix
+  AssetsPrefix:
+    Description: Prefix used for private image assets.
+    Value:
+      Ref: AssetsPrefix
+  WebObjectsArn:
+    Description: ARN pattern for static frontend objects.
+    Value:
+      Fn::Sub: ${StorageBucket.Arn}/${WebPrefix}*
+  AssetObjectsArn:
+    Description: ARN pattern for private image asset objects.
+    Value:
+      Fn::Sub: ${StorageBucket.Arn}/${AssetsPrefix}*
