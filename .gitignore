@@ -1,0 +1,46 @@
+# AWS SAM build artifacts
+.aws-sam/
+**/.aws-sam/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+.python-version
+
+# Node / frontend
+node_modules/
+dist/
+build/
+.next/
+.vite/
+
+# Azure Functions local files
+local.settings.json
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Terraform, if used later
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
