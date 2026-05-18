@@ -25,12 +25,10 @@ Parameters:
   CallbackUrl:
     Type: String
     Description: Frontend callback URL after successful login.
-    Default: http://localhost:3000/callback
 
   LogoutUrl:
     Type: String
     Description: Frontend URL after logout.
-    Default: http://localhost:3000/logout
 
   UserPoolDeletionProtection:
     Type: String

@@ -8,24 +8,22 @@
   <h1>Login callback received</h1>
   <p id="status">Exchanging authorization code for tokens...</p>
 
-  <script>
-    const cognitoDomain = "https://shaomin-faas-dev.auth.us-east-1.amazoncognito.com";
-    const clientId = "2ffrs1pe6rlkb6jf2mpopbqhfq";
-    const redirectUri = "https://blue-wave-0c8589a0f.7.azurestaticapps.net/callback";
+  <script type="module">
+    import { config } from "../js/config.js";
 
     const status = document.getElementById("status");
 
     async function exchangeCodeForTokens(code) {
-      const response = await fetch(`${cognitoDomain}/oauth2/token`, {
+      const response = await fetch(`${config.cognitoDomain}/oauth2/token`, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded"
         },
         body: new URLSearchParams({
           grant_type: "authorization_code",
-          client_id: clientId,
+          client_id: config.clientId,
           code: code,
-          redirect_uri: redirectUri
+          redirect_uri: config.redirectUri
         })
       });
 
@@ -40,6 +38,12 @@
     async function main() {
       const params = new URLSearchParams(window.location.search);
       const code = params.get("code");
+      const error = params.get("error");
+
+      if (error) {
+        status.textContent = `Login failed: ${error}`;
+        return;
+      }
 
       if (!code) {
         status.textContent = "No authorization code found.";
@@ -51,11 +55,14 @@
 
         sessionStorage.setItem("id_token", tokens.id_token);
         sessionStorage.setItem("access_token", tokens.access_token);
-        sessionStorage.setItem("refresh_token", tokens.refresh_token);
+
+        if (tokens.refresh_token) {
+          sessionStorage.setItem("refresh_token", tokens.refresh_token);
+        }
 
         status.textContent = "Login successful. Redirecting...";
 
-        window.location.href = "/index.html";
+        window.location.href = config.appUrl;
       } catch (error) {
         console.error("Token exchange failed:", error);
         status.textContent = "Token exchange failed. Check console for details.";

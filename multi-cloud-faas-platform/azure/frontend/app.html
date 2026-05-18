@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Multi-Cloud FaaS Platform App</title>
+</head>
+<body>
+  <h1>Multi-Cloud FaaS Platform</h1>
+
+  <p id="status">Checking login status...</p>
+
+  <div id="userInfo" style="display: none;">
+    <h2>Login Successful</h2>
+
+    <p><strong>Email:</strong> <span id="email"></span></p>
+    <p><strong>First name:</strong> <span id="givenName"></span></p>
+    <p><strong>Last name:</strong> <span id="familyName"></span></p>
+    <p><strong>User ID:</strong> <span id="sub"></span></p>
+
+    <button id="logoutButton">Sign out</button>
+  </div>
+
+  <script type="module">
+    import { config } from "./js/config.js";
+
+    const status = document.getElementById("status");
+    const userInfo = document.getElementById("userInfo");
+
+    function decodeJwt(token) {
+      const payload = token.split(".")[1];
+      const normalizedPayload = payload.replace(/-/g, "+").replace(/_/g, "/");
+      const paddedPayload = normalizedPayload.padEnd(
+        normalizedPayload.length + (4 - normalizedPayload.length % 4) % 4,
+        "="
+      );
+
+      return JSON.parse(atob(paddedPayload));
+    }
+
+    function logout() {
+      sessionStorage.clear();
+
+      const logoutUrl =
+        `${config.cognitoDomain}/logout?` +
+        `client_id=${config.clientId}` +
+        `&logout_uri=${encodeURIComponent(config.logoutUri)}`;
+
+      window.location.href = logoutUrl;
+    }
+
+    function main() {
+      const idToken = sessionStorage.getItem("id_token");
+
+      if (!idToken) {
+        window.location.href = "/";
+        return;
+      }
+
+      try {
+        const claims = decodeJwt(idToken);
+
+        document.getElementById("email").textContent = claims.email || "";
+        document.getElementById("givenName").textContent = claims.given_name || "";
+        document.getElementById("familyName").textContent = claims.family_name || "";
+        document.getElementById("sub").textContent = claims.sub || "";
+
+        status.textContent = "You are signed in with Cognito.";
+        userInfo.style.display = "block";
+      } catch (error) {
+        console.error("Failed to read ID token:", error);
+
+        sessionStorage.clear();
+        window.location.href = "/";
+      }
+    }
+
+    document.getElementById("logoutButton").addEventListener("click", logout);
+
+    main();
+  </script>
+</body>
+</html>

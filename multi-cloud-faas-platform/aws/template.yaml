@@ -23,15 +23,10 @@ Parameters:
     AllowedPattern: "^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$"
     ConstraintDescription: Use 3-63 lowercase letters, numbers, and hyphens. Must start and end with a letter or number.
 
-  CallbackUrl:
+  FrontendBaseUrl:
     Type: String
-    Description: Frontend callback URL after successful login.
-    Default: http://localhost:3000/callback
-
-  LogoutUrl:
-    Type: String
-    Description: Frontend URL after logout.
-    Default: http://localhost:3000/logout
+    Description: Frontend base URL without trailing slash.
+    Default: https://blue-wave-0c8589a0f.7.azurestaticapps.net
 
   UserPoolDeletionProtection:
     Type: String
@@ -40,11 +35,6 @@ Parameters:
     AllowedValues:
       - ACTIVE
       - INACTIVE
-
-  ApiCorsAllowedOrigins:
-    Type: CommaDelimitedList
-    Description: Allowed frontend origins for API Gateway CORS.
-    Default: "http://localhost:3000,http://localhost:5173"
 
 Resources:
   AuthStack:
@@ -55,8 +45,8 @@ Resources:
         ProjectName: !Ref ProjectName
         Environment: !Ref Environment
         AuthDomainPrefix: !Ref AuthDomainPrefix
-        CallbackUrl: !Ref CallbackUrl
-        LogoutUrl: !Ref LogoutUrl
+        CallbackUrl: !Sub "${FrontendBaseUrl}/callback"
+        LogoutUrl: !Sub "${FrontendBaseUrl}/"
         UserPoolDeletionProtection: !Ref UserPoolDeletionProtection
       Tags:
         Project: !Ref ProjectName
@@ -97,7 +87,7 @@ Resources:
 
         UserPoolIssuer: !GetAtt AuthStack.Outputs.UserPoolIssuer
         UserPoolClientId: !GetAtt AuthStack.Outputs.UserPoolClientId
-        CorsAllowedOrigins: !Join [",", !Ref ApiCorsAllowedOrigins]
+        CorsAllowedOrigins: !Sub "${FrontendBaseUrl},http://localhost:3000,http://localhost:5173"
 
         StorageBucketName: !GetAtt StorageStack.Outputs.StorageBucketName
         AssetsPrefix: !GetAtt StorageStack.Outputs.AssetsPrefix
