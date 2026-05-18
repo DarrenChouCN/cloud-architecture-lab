@@ -5,5 +5,8 @@ export const config = {
   redirectUri: "https://blue-wave-0c8589a0f.7.azurestaticapps.net/callback",
   logoutUri: "https://blue-wave-0c8589a0f.7.azurestaticapps.net/",
 
-  appUrl: "/app.html"
+  appUrl: "/app.html",
+  
+  // API Gateway address
+  apiBaseUrl: "https://3iggcqp0h4.execute-api.us-east-1.amazonaws.com"
 };

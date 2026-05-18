@@ -9,7 +9,7 @@
 
   <p id="status">Checking login status...</p>
 
-  <div id="userInfo" style="display: none;">
+  <section id="userInfo" style="display: none;">
     <h2>Login Successful</h2>
 
     <p><strong>Email:</strong> <span id="email"></span></p>
@@ -18,65 +18,27 @@
     <p><strong>User ID:</strong> <span id="sub"></span></p>
 
     <button id="logoutButton">Sign out</button>
-  </div>
+  </section>
 
-  <script type="module">
-    import { config } from "./js/config.js";
+  <hr />
 
-    const status = document.getElementById("status");
-    const userInfo = document.getElementById("userInfo");
+  <section id="uploadSection" style="display: none;">
+    <h2>Upload Media File</h2>
 
-    function decodeJwt(token) {
-      const payload = token.split(".")[1];
-      const normalizedPayload = payload.replace(/-/g, "+").replace(/_/g, "/");
-      const paddedPayload = normalizedPayload.padEnd(
-        normalizedPayload.length + (4 - normalizedPayload.length % 4) % 4,
-        "="
-      );
+    <p>Select an image or video file to upload.</p>
 
-      return JSON.parse(atob(paddedPayload));
-    }
+    <input
+      id="fileInput"
+      type="file"
+      accept="image/jpeg,image/png,video/mp4"
+    />
 
-    function logout() {
-      sessionStorage.clear();
+    <button id="uploadButton">Upload</button>
 
-      const logoutUrl =
-        `${config.cognitoDomain}/logout?` +
-        `client_id=${config.clientId}` +
-        `&logout_uri=${encodeURIComponent(config.logoutUri)}`;
+    <h3>Result</h3>
+    <pre id="uploadResult">No upload yet.</pre>
+  </section>
 
-      window.location.href = logoutUrl;
-    }
-
-    function main() {
-      const idToken = sessionStorage.getItem("id_token");
-
-      if (!idToken) {
-        window.location.href = "/";
-        return;
-      }
-
-      try {
-        const claims = decodeJwt(idToken);
-
-        document.getElementById("email").textContent = claims.email || "";
-        document.getElementById("givenName").textContent = claims.given_name || "";
-        document.getElementById("familyName").textContent = claims.family_name || "";
-        document.getElementById("sub").textContent = claims.sub || "";
-
-        status.textContent = "You are signed in with Cognito.";
-        userInfo.style.display = "block";
-      } catch (error) {
-        console.error("Failed to read ID token:", error);
-
-        sessionStorage.clear();
-        window.location.href = "/";
-      }
-    }
-
-    document.getElementById("logoutButton").addEventListener("click", logout);
-
-    main();
-  </script>
+  <script type="module" src="./js/app.js"></script>
 </body>
 </html>
