@@ -1,4 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
 Description: S3 storage layer for the multi-cloud FaaS platform.
 
 Parameters:
@@ -29,6 +30,19 @@ Parameters:
     Type: String
     Description: S3 key prefix for private image assets.
     Default: assets/
+
+  MediaTableName:
+    Type: String
+    Description: DynamoDB table name for media metadata.
+
+  MediaTableArn:
+    Type: String
+    Description: DynamoDB table ARN for media metadata.
+
+  AzureProcessingEndpoint:
+    Type: String
+    Description: Azure Function HTTP endpoint for media processing.
+    Default: ""
 
 Resources:
   StorageBucket:
@@ -89,6 +103,56 @@ Resources:
         - Key: Layer
           Value: storage
 
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: s3:ObjectCreated:*
+            Function: !GetAtt MediaIngestFunction.Arn
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: !Ref AssetsPrefix
+
+  MediaIngestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}-${Environment}-media-ingest"
+      Runtime: python3.12
+      Handler: app.lambda_handler
+      CodeUri: ../../src/media_ingest/
+      Timeout: 30
+      MemorySize: 128
+      # For AWS Academy account
+      Role: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/LabRole"
+
+      Environment:
+        Variables:
+          MEDIA_TABLE: !Ref MediaTableName
+          ASSETS_PREFIX: !Ref AssetsPrefix
+          AZURE_PROCESSING_ENDPOINT: !Ref AzureProcessingEndpoint
+          PRESIGNED_URL_EXPIRES_IN: "3600"
+
+      # Policies:
+      #   - Statement:
+      #       - Effect: Allow
+      #         Action:
+      #           - s3:GetObject
+      #         Resource: !Sub "${StorageBucket.Arn}/${AssetsPrefix}*"
+
+      #       - Effect: Allow
+      #         Action:
+      #           - dynamodb:GetItem
+      #           - dynamodb:UpdateItem
+      #         Resource: !Ref MediaTableArn
+
+  MediaIngestFunctionInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MediaIngestFunction
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+
 Outputs:
   StorageBucketName:
     Description: Name of the S3 bucket used for web files and private assets.
@@ -117,3 +181,11 @@ Outputs:
   AssetObjectsArn:
     Description: ARN pattern for private image asset objects.
     Value: !Sub "${StorageBucket.Arn}/${AssetsPrefix}*"
+
+  MediaIngestFunctionName:
+    Description: Name of the S3-triggered media ingest function.
+    Value: !Ref MediaIngestFunction
+
+  MediaIngestFunctionArn:
+    Description: ARN of the S3-triggered media ingest function.
+    Value: !GetAtt MediaIngestFunction.Arn

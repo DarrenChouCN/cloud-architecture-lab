@@ -53,19 +53,6 @@ Resources:
         Environment: !Ref Environment
         Layer: auth
 
-  StorageStack:
-    Type: AWS::Serverless::Application
-    Properties:
-      Location: infra/storage/template.yaml
-      Parameters:
-        ProjectName: !Ref ProjectName
-        Environment: !Ref Environment
-        FrontendBaseUrl: !Ref FrontendBaseUrl
-      Tags:
-        Project: !Ref ProjectName
-        Environment: !Ref Environment
-        Layer: storage
-
   DataStack:
     Type: AWS::Serverless::Application
     Properties:
@@ -77,6 +64,22 @@ Resources:
         Project: !Ref ProjectName
         Environment: !Ref Environment
         Layer: data
+
+  StorageStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: infra/storage/template.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        Environment: !Ref Environment
+        FrontendBaseUrl: !Ref FrontendBaseUrl
+
+        MediaTableName: !GetAtt DataStack.Outputs.MediaTableName
+        MediaTableArn: !GetAtt DataStack.Outputs.MediaTableArn
+      Tags:
+        Project: !Ref ProjectName
+        Environment: !Ref Environment
+        Layer: storage
 
   ApiStack:
     Type: AWS::Serverless::Application
