@@ -18,40 +18,21 @@ Resources:
   MediaTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub "${ProjectName}-${Environment}-media"
+      TableName: !Sub "${ProjectName}-${Environment}-media-v2"
 
       BillingMode: PAY_PER_REQUEST
 
       AttributeDefinitions:
-        - AttributeName: MediaId
+        - AttributeName: pk
           AttributeType: S
-        - AttributeName: Checksum
-          AttributeType: S
-        - AttributeName: OwnerUserId
-          AttributeType: S
-        - AttributeName: CreatedAt
+        - AttributeName: sk
           AttributeType: S
 
       KeySchema:
-        - AttributeName: MediaId
+        - AttributeName: pk
           KeyType: HASH
-
-      GlobalSecondaryIndexes:
-        - IndexName: ChecksumIndex
-          KeySchema:
-            - AttributeName: Checksum
-              KeyType: HASH
-          Projection:
-            ProjectionType: ALL
-
-        - IndexName: UserUploadsIndex
-          KeySchema:
-            - AttributeName: OwnerUserId
-              KeyType: HASH
-            - AttributeName: CreatedAt
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
+        - AttributeName: sk
+          KeyType: RANGE
 
       SSESpecification:
         SSEEnabled: true
@@ -72,11 +53,3 @@ Outputs:
   MediaTableArn:
     Description: DynamoDB table ARN for media metadata.
     Value: !GetAtt MediaTable.Arn
-
-  ChecksumIndexName:
-    Description: GSI used to check whether a file already exists by checksum.
-    Value: ChecksumIndex
-
-  UserUploadsIndexName:
-    Description: GSI used to list uploads by Cognito user.
-    Value: UserUploadsIndex

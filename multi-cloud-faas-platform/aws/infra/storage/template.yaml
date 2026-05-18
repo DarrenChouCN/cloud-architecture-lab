@@ -16,6 +16,10 @@ Parameters:
       - test
       - prod
 
+  FrontendBaseUrl:
+    Type: String
+    Description: Frontend base URL allowed to upload files to S3.
+
   WebPrefix:
     Type: String
     Description: S3 key prefix for static frontend files.
@@ -49,6 +53,22 @@ Resources:
 
       VersioningConfiguration:
         Status: Enabled
+
+      CorsConfiguration:
+        CorsRules:
+          - AllowedOrigins:
+              - !Ref FrontendBaseUrl
+              - http://localhost:3000
+              - http://localhost:5173
+            AllowedMethods:
+              - PUT
+              - GET
+              - HEAD
+            AllowedHeaders:
+              - "*"
+            ExposedHeaders:
+              - ETag
+            MaxAge: 3000
 
       LifecycleConfiguration:
         Rules:

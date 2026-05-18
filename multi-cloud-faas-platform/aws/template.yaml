@@ -60,6 +60,7 @@ Resources:
       Parameters:
         ProjectName: !Ref ProjectName
         Environment: !Ref Environment
+        FrontendBaseUrl: !Ref FrontendBaseUrl
       Tags:
         Project: !Ref ProjectName
         Environment: !Ref Environment
