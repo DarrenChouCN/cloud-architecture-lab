@@ -39,6 +39,128 @@
     <pre id="uploadResult">No upload yet.</pre>
   </section>
 
+  <hr />
+
+  <section id="mediaApiSection" style="display: none;">
+    <h2>Media Search and Management</h2>
+
+    <section>
+      <h3>Find Files by Tags</h3>
+
+      <p>Enter tag requirements as JSON. Example: {"koala": 3, "wombat": 2}</p>
+
+      <textarea
+        id="queryTagsInput"
+        rows="5"
+        cols="80"
+        placeholder='{"koala": 1}'
+      ></textarea>
+
+      <br />
+      <button id="queryTagsButton">Search by Tags</button>
+
+      <h4>Result</h4>
+      <pre id="queryTagsResult">No query yet.</pre>
+    </section>
+
+    <hr />
+
+    <section>
+      <h3>Find Files by Species</h3>
+
+      <p>Enter one species name. Example: koala</p>
+
+      <input
+        id="querySpeciesInput"
+        type="text"
+        placeholder="koala"
+      />
+
+      <button id="querySpeciesButton">Search by Species</button>
+
+      <h4>Result</h4>
+      <pre id="querySpeciesResult">No query yet.</pre>
+    </section>
+
+    <hr />
+
+    <section>
+      <h3>Find Original File by Thumbnail URL</h3>
+
+      <p>Paste a thumbnail URL or thumbnail object key.</p>
+
+      <input
+        id="queryThumbnailInput"
+        type="text"
+        size="100"
+        placeholder="assets/user-id/image/file-id/thumbnail.jpg"
+      />
+
+      <button id="queryThumbnailButton">Find Original File</button>
+
+      <h4>Result</h4>
+      <pre id="queryThumbnailResult">No query yet.</pre>
+    </section>
+
+    <hr />
+
+    <section>
+      <h3>Bulk Add or Remove Tags</h3>
+
+      <p>Enter file URLs or object keys, one per line.</p>
+
+      <textarea
+        id="bulkUrlsInput"
+        rows="5"
+        cols="80"
+        placeholder="assets/user-id/image/file-id/original.jpg"
+      ></textarea>
+
+      <p>Enter tags, separated by commas. Example: koala, animal, test</p>
+
+      <input
+        id="bulkTagsInput"
+        type="text"
+        size="80"
+        placeholder="koala, animal"
+      />
+
+      <p>
+        <label for="bulkOperationInput">Operation:</label>
+        <select id="bulkOperationInput">
+          <option value="add">Add tags</option>
+          <option value="remove">Remove tags</option>
+        </select>
+      </p>
+
+      <button id="bulkTagsButton">Submit Bulk Tag Update</button>
+
+      <h4>Result</h4>
+      <pre id="bulkTagsResult">No update yet.</pre>
+    </section>
+
+    <hr />
+
+    <section>
+      <h3>Delete Files</h3>
+
+      <p>Enter file URLs or object keys, one per line. This will delete S3 objects and DynamoDB metadata.</p>
+
+      <textarea
+        id="deleteUrlsInput"
+        rows="5"
+        cols="80"
+        placeholder="assets/user-id/image/file-id/original.jpg"
+      ></textarea>
+
+      <br />
+      <button id="deleteFilesButton">Delete Files</button>
+
+      <h4>Result</h4>
+      <pre id="deleteFilesResult">No delete request yet.</pre>
+    </section>
+  </section>
+
   <script type="module" src="./js/app.js"></script>
 </body>
 </html>

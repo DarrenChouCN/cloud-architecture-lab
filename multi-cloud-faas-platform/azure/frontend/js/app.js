@@ -1,5 +1,6 @@
 import { requireLogin, logout } from "./auth.js";
 import { initUploadForm } from "./upload.js";
+import { initMediaApiForm } from "./media_api.js";
 
 function renderUserInfo(claims) {
   document.getElementById("email").textContent = claims.email || "";
@@ -20,10 +21,12 @@ function main() {
   document.getElementById("status").textContent = "You are signed in with Cognito.";
   document.getElementById("userInfo").style.display = "block";
   document.getElementById("uploadSection").style.display = "block";
+  document.getElementById("mediaApiSection").style.display = "block";
 
   document.getElementById("logoutButton").addEventListener("click", logout);
 
   initUploadForm();
+  initMediaApiForm();
 }
 
 main();
