@@ -127,6 +127,100 @@ Resources:
             Auth:
               Authorizer: CognitoJwtAuthorizer
 
+  MediaApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}-${Environment}-media-api"
+      Runtime: python3.12
+      Handler: app.lambda_handler
+      CodeUri: ../../src/media_api/
+      Timeout: 20
+      MemorySize: 256
+
+      # For AWS Academy account
+      Role: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/LabRole"
+
+      Environment:
+        Variables:
+          MEDIA_BUCKET: !Ref StorageBucketName
+          MEDIA_TABLE: !Ref MediaTableName
+          ASSETS_PREFIX: !Ref AssetsPrefix
+          PRESIGNED_URL_EXPIRES_IN: "3600"
+
+      # For creating Lambda execution role
+      # Policies:
+      #   - Statement:
+      #       - Effect: Allow
+      #         Action:
+      #           - s3:GetObject
+      #           - s3:DeleteObject
+      #         Resource: !Sub "arn:${AWS::Partition}:s3:::${StorageBucketName}/${AssetsPrefix}*"
+
+      #       - Effect: Allow
+      #         Action:
+      #           - dynamodb:GetItem
+      #           - dynamodb:Query
+      #           - dynamodb:Scan
+      #           - dynamodb:UpdateItem
+      #           - dynamodb:DeleteItem
+      #           - dynamodb:BatchGetItem
+      #           - dynamodb:BatchWriteItem
+      #         Resource:
+      #           - !Ref MediaTableArn
+      #           - !Sub "${MediaTableArn}/index/*"
+
+      Events:
+        QueryTagsRoute:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /query/tags
+            Method: POST
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
+
+        QuerySpeciesRoute:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /query/species
+            Method: GET
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
+
+        QueryThumbnailRoute:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /query/thumbnail
+            Method: POST
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
+
+        BulkTagsRoute:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /tags/bulk
+            Method: POST
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
+
+        DeleteFilesRoute:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /files/delete
+            Method: POST
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
+
+      Tags:
+        Project: !Ref ProjectName
+        Environment: !Ref Environment
+        Layer: api
+        Component: media-api
+
 Outputs:
   ApiId:
     Description: API Gateway HTTP API ID.
@@ -139,3 +233,11 @@ Outputs:
   CognitoAuthorizerName:
     Description: Cognito JWT authorizer name used by this API.
     Value: CognitoJwtAuthorizer
+
+  MediaApiFunctionName:
+    Description: Media API Lambda function name.
+    Value: !Ref MediaApiFunction
+
+  MediaApiFunctionArn:
+    Description: Media API Lambda function ARN.
+    Value: !GetAtt MediaApiFunction.Arn

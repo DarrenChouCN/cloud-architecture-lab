@@ -27,17 +27,17 @@ az group create \
   --name rg-multicloud-faas-dev \
   --location eastus2
 
+az bicep build --file azure/infra/main.bicep
+
 az deployment group create \
   --resource-group rg-multicloud-faas-dev \
   --template-file azure/infra/main.bicep \
-  --parameters staticWebAppName=swa-multicloud-faas-dev location=eastus2
+  --parameters azure/infra/parameters/dev.bicepparam \
+  --mode Incremental
+```
 
-RESOURCE_GROUP="rg-multicloud-faas-dev"
-SWA_NAME="swa-multicloud-faas-dev"
 
-az staticwebapp secrets list \
-  --name $SWA_NAME \
-  --resource-group $RESOURCE_GROUP \
-  --query "properties.apiKey" \
-  -o tsv
+```bash
+chmod +x azure/infra/scripts/upload-models.sh
+./azure/infra/scripts/upload-models.sh
 ```

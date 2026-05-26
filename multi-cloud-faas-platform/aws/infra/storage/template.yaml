@@ -39,10 +39,15 @@ Parameters:
     Type: String
     Description: DynamoDB table ARN for media metadata.
 
-  AzureProcessingEndpoint:
+  AzureImageProcessingEndpoint:
     Type: String
-    Description: Azure Function HTTP endpoint for media processing.
-    Default: ""
+    Default: "https://wildlife-ml-worker.blackglacier-fc4a347e.australiaeast.azurecontainerapps.io/process-image"
+    Description: Azure Function endpoint for image processing
+
+  AzureVideoProcessingEndpoint:
+    Type: String
+    Default: "https://wildlife-ml-worker.blackglacier-fc4a347e.australiaeast.azurecontainerapps.io/process-video"
+    Description: Azure Function endpoint for video processing
 
 Resources:
   StorageBucket:
@@ -120,8 +125,8 @@ Resources:
       Runtime: python3.12
       Handler: app.lambda_handler
       CodeUri: ../../src/media_ingest/
-      Timeout: 30
-      MemorySize: 128
+      Timeout: 180
+      MemorySize: 256
       # For AWS Academy account
       Role: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/LabRole"
 
@@ -129,7 +134,9 @@ Resources:
         Variables:
           MEDIA_TABLE: !Ref MediaTableName
           ASSETS_PREFIX: !Ref AssetsPrefix
-          AZURE_PROCESSING_ENDPOINT: !Ref AzureProcessingEndpoint
+          AZURE_IMAGE_PROCESSING_ENDPOINT: !Ref AzureImageProcessingEndpoint
+          AZURE_VIDEO_PROCESSING_ENDPOINT: !Ref AzureVideoProcessingEndpoint
+          AZURE_REQUEST_TIMEOUT: "120"
           PRESIGNED_URL_EXPIRES_IN: "3600"
 
       # Policies:
@@ -137,6 +144,7 @@ Resources:
       #       - Effect: Allow
       #         Action:
       #           - s3:GetObject
+      #           - s3:PutObject
       #         Resource: !Sub "${StorageBucket.Arn}/${AssetsPrefix}*"
 
       #       - Effect: Allow

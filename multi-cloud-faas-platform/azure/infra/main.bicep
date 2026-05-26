@@ -1,14 +1,14 @@
 targetScope = 'resourceGroup'
 
-param staticWebAppName string = 'swa-multicloud-faas-dev'
-param location string = 'eastus2'
+param environmentName string = 'dev'
+param location string = resourceGroup().location
 
-resource staticWebApp 'Microsoft.Web/staticSites@2025-03-01' = {
-  name: staticWebAppName
-  location: location
-  sku: {
-    name: 'Free'
-    tier: 'Free'
+param staticWebAppName string
+
+module staticWebApp './modules/static-web-app.bicep' = {
+  name: 'static-web-app-${environmentName}'
+  params: {
+    name: staticWebAppName
+    location: location
   }
-  properties: {}
 }

@@ -44,3 +44,7 @@ pnpm-debug.log*
 *.tfstate
 *.tfstate.*
 .terraform.lock.hcl
+
+# ML model artifacts
+.models/
+*.pt
