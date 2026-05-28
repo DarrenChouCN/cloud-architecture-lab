@@ -65,6 +65,33 @@
 
     <hr />
 
+  <section>
+    <h3>Find Files by Query File</h3>
+
+    <p>
+      Upload a temporary image or video file. The file will be analyzed by the ML model,
+      and the detected tags will be used to search matching media files.
+    </p>
+
+    <p>
+      The query file is used only for searching. It will not be stored permanently or added to the database.
+    </p>
+
+    <input
+      id="queryByFileInput"
+      type="file"
+      accept="image/jpeg,image/png,video/mp4"
+    />
+
+    <button id="queryByFileButton">Analyze and Search</button>
+
+    <h4>Status</h4>
+    <pre id="queryByFileStatus">No query file uploaded yet.</pre>
+
+    <h4>Result</h4>
+    <pre id="queryByFileResult">No result yet.</pre>
+  </section>
+
     <section>
       <h3>Find Files by Species</h3>
 

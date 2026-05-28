@@ -48,6 +48,29 @@ function readCsv(elementId) {
     .filter(Boolean);
 }
 
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Failed to read query file."));
+
+    reader.readAsDataURL(file);
+  });
+}
+
+function inferFileType(file) {
+  if (file.type.startsWith("image/")) {
+    return "image";
+  }
+
+  if (file.type.startsWith("video/")) {
+    return "video";
+  }
+
+  throw new Error("Query file must be an image or video.");
+}
+
 function initQueryTags() {
   document.getElementById("queryTagsButton").addEventListener("click", async () => {
     try {
@@ -81,6 +104,51 @@ function initQuerySpecies() {
       showResult("querySpeciesResult", result);
     } catch (error) {
       showResult("querySpeciesResult", { error: error.message });
+    }
+  });
+}
+
+function initQueryByFile() {
+  document.getElementById("queryByFileButton").addEventListener("click", async () => {
+    const fileInput = document.getElementById("queryByFileInput");
+    const button = document.getElementById("queryByFileButton");
+    const status = document.getElementById("queryByFileStatus");
+
+    try {
+      const file = fileInput.files[0];
+
+      if (!file) {
+        throw new Error("Please select a query file first.");
+      }
+
+      button.disabled = true;
+      status.textContent = "Preparing query file...";
+      showResult("queryByFileResult", {});
+
+      const dataBase64 = await readFileAsDataUrl(file);
+      const fileType = inferFileType(file);
+
+      status.textContent =
+        "Uploading and analyzing query file with Azure ML. This may take a few seconds...";
+
+      const result = await callApi("/query/by-file", {
+        method: "POST",
+        body: JSON.stringify({
+          filename: file.name,
+          content_type: file.type,
+          file_type: fileType,
+          data_base64: dataBase64
+        })
+      });
+
+      status.textContent = "Query completed.";
+      showResult("queryByFileResult", result);
+    } catch (error) {
+      console.error(error);
+      status.textContent = "Query failed.";
+      showResult("queryByFileResult", { error: error.message });
+    } finally {
+      button.disabled = false;
     }
   });
 }
@@ -173,6 +241,7 @@ function initDeleteFiles() {
 export function initMediaApiForm() {
   initQueryTags();
   initQuerySpecies();
+  initQueryByFile();
   initQueryThumbnail();
   initBulkTags();
   initDeleteFiles();
