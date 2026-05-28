@@ -1,0 +1,92 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Notification stack for tag-based media events.
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Project name used for resource naming.
+
+  Environment:
+    Type: String
+    Description: Deployment environment.
+
+  MediaTableStreamArn:
+    Type: String
+    Description: DynamoDB media table stream ARN.
+
+Resources:
+  TagNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "${ProjectName}-${Environment}-tag-notifications"
+      DisplayName: !Sub "${ProjectName}-${Environment} tag notifications"
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Layer
+          Value: notification
+
+  NotificationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}-${Environment}-notification"
+      Runtime: python3.12
+      Handler: app.lambda_handler
+      CodeUri: ../../src/notification/
+      Timeout: 20
+      MemorySize: 128
+
+      # For AWS Academy account
+      Role: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/LabRole"
+
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: !Ref TagNotificationTopic
+
+      # For creating Lambda execution role
+      # Policies:
+      #   - Statement:
+      #       - Effect: Allow
+      #         Action:
+      #           - sns:Publish
+      #         Resource: !Ref TagNotificationTopic
+
+      #       - Effect: Allow
+      #         Action:
+      #           - dynamodb:DescribeStream
+      #           - dynamodb:GetRecords
+      #           - dynamodb:GetShardIterator
+      #           - dynamodb:ListStreams
+      #         Resource: !Ref MediaTableStreamArn
+
+      Events:
+        MediaTableStream:
+          Type: DynamoDB
+          Properties:
+            Stream: !Ref MediaTableStreamArn
+            StartingPosition: LATEST
+            BatchSize: 10
+            MaximumRetryAttempts: 2
+            BisectBatchOnFunctionError: true
+
+      Tags:
+        Project: !Ref ProjectName
+        Environment: !Ref Environment
+        Layer: notification
+        Component: tag-notification
+
+Outputs:
+  TagNotificationTopicArn:
+    Description: SNS topic ARN for tag-based notifications.
+    Value: !Ref TagNotificationTopic
+
+  NotificationFunctionName:
+    Description: Notification Lambda function name.
+    Value: !Ref NotificationFunction
+
+  NotificationFunctionArn:
+    Description: Notification Lambda function ARN.
+    Value: !GetAtt NotificationFunction.Arn

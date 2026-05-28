@@ -103,6 +103,15 @@ Resources:
         Environment: !Ref Environment
         Layer: api
 
+  NotificationStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: infra/notification/template.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        Environment: !Ref Environment
+        MediaTableStreamArn: !GetAtt DataStack.Outputs.MediaTableStreamArn
+
 Outputs:
   UserPoolId:
     Description: Cognito User Pool ID.
@@ -139,3 +148,11 @@ Outputs:
   MediaTableName:
     Description: DynamoDB table name for media metadata.
     Value: !GetAtt DataStack.Outputs.MediaTableName
+
+  TagNotificationTopicArn:
+    Description: SNS topic ARN for tag-based notifications.
+    Value: !GetAtt NotificationStack.Outputs.TagNotificationTopicArn
+
+  NotificationFunctionName:
+    Description: Notification Lambda function name.
+    Value: !GetAtt NotificationStack.Outputs.NotificationFunctionName

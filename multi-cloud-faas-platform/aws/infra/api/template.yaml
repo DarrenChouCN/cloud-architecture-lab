@@ -45,6 +45,16 @@ Parameters:
     Type: String
     Description: DynamoDB table ARN for media metadata.
 
+  QueryFileAnalysisEndpoint:
+    Type: String
+    Default: "https://wildlife-ml-worker.blackglacier-fc4a347e.australiaeast.azurecontainerapps.io/analyze-query-file"
+    Description: Azure endpoint for analyzing temporary query files.
+
+  QueryFileRequestTimeout:
+    Type: Number
+    Default: 25
+    Description: Timeout in seconds for calling the Azure query file analysis endpoint.
+
 Resources:
   HttpApi:
     Type: AWS::Serverless::HttpApi
@@ -221,6 +231,64 @@ Resources:
         Layer: api
         Component: media-api
 
+  QueryByFileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}-${Environment}-query-by-file"
+      Runtime: python3.12
+      Handler: app.lambda_handler
+      CodeUri: ../../src/query_by_file/
+      Timeout: 28
+      MemorySize: 512
+
+      # For AWS Academy account
+      Role: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/LabRole"
+
+      Environment:
+        Variables:
+          MEDIA_BUCKET: !Ref StorageBucketName
+          MEDIA_TABLE: !Ref MediaTableName
+          ASSETS_PREFIX: !Ref AssetsPrefix
+          PRESIGNED_URL_EXPIRES_IN: "3600"
+          QUERY_FILE_ANALYSIS_ENDPOINT: !Ref QueryFileAnalysisEndpoint
+          QUERY_FILE_REQUEST_TIMEOUT: !Ref QueryFileRequestTimeout
+          QUERY_FILE_TEMP_PREFIX: "query-temp/"
+          MODEL_VERSION: "current"
+
+      # Policies:
+      #   - Statement:
+      #       - Effect: Allow
+      #         Action:
+      #           - s3:PutObject
+      #           - s3:GetObject
+      #           - s3:DeleteObject
+      #         Resource: !Sub "arn:${AWS::Partition}:s3:::${StorageBucketName}/query-temp/*"
+
+      #       - Effect: Allow
+      #         Action:
+      #           - dynamodb:GetItem
+      #           - dynamodb:Query
+      #           - dynamodb:Scan
+      #         Resource:
+      #           - !Ref MediaTableArn
+      #           - !Sub "${MediaTableArn}/index/*"
+
+      Events:
+        QueryByFileRoute:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /query/by-file
+            Method: POST
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
+
+      Tags:
+        Project: !Ref ProjectName
+        Environment: !Ref Environment
+        Layer: api
+        Component: query-by-file
+
 Outputs:
   ApiId:
     Description: API Gateway HTTP API ID.
@@ -241,3 +309,11 @@ Outputs:
   MediaApiFunctionArn:
     Description: Media API Lambda function ARN.
     Value: !GetAtt MediaApiFunction.Arn
+
+  QueryByFileFunctionName:
+    Description: Query by file Lambda function name.
+    Value: !Ref QueryByFileFunction
+
+  QueryByFileFunctionArn:
+    Description: Query by file Lambda function ARN.
+    Value: !GetAtt QueryByFileFunction.Arn

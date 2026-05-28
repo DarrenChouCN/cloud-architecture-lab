@@ -37,6 +37,9 @@ Resources:
       SSESpecification:
         SSEEnabled: true
 
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+
       Tags:
         - Key: Project
           Value: !Ref ProjectName
@@ -53,3 +56,7 @@ Outputs:
   MediaTableArn:
     Description: DynamoDB table ARN for media metadata.
     Value: !GetAtt MediaTable.Arn
+
+  MediaTableStreamArn:
+    Description: DynamoDB stream ARN for the media table.
+    Value: !GetAtt MediaTable.StreamArn

@@ -17,6 +17,23 @@ sam deploy \
     ProjectName=multi-cloud-faas \
     Environment=dev \
     AuthDomainPrefix=shaomin-faas-dev
+
+# Deploy SNS
+export TOPIC_ARN=$(aws cloudformation describe-stacks \
+  --stack-name multi-cloud-faas-dev-aws \
+  --region us-east-1 \
+  --query "Stacks[0].Outputs[?OutputKey=='TagNotificationTopicArn'].OutputValue | [0]" \
+  --output text)
+
+echo "$TOPIC_ARN"
+
+aws sns subscribe \
+  --topic-arn "$TOPIC_ARN" \
+  --protocol email \
+  --notification-endpoint "your-email@example.com" \
+  --attributes '{"FilterPolicy":"{\"tags\":[\"koala\",\"dingo\",\"wombat\"]}"}' \
+  --return-subscription-arn \
+  --region us-east-1
 ```
 
 ## Deploy Azure Infra
