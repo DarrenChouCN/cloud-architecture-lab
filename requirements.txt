@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+requests
+
+azure-storage-blob
+
+pillow
+numpy
+opencv-python-headless
+
+torch
+torchvision
+
+megadetector
+onnx2torch
+onnx==1.12.0
+protobuf==3.20.1
