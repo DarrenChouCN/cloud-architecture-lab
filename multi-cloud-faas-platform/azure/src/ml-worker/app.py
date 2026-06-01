@@ -40,6 +40,7 @@ def startup_event():
     """
     Container startup hook.
 
+
     When the container starts, it checks whether model files exist locally.
     If not, it downloads mdv5a.pt and model.pt from Azure Blob Storage.
     """
