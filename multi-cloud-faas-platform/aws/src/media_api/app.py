@@ -59,15 +59,21 @@ class NotFoundError(AppError):
     error_code = "not_found"
 
 
+# Main HTTP API entry point.
+# It resolves the route, builds request context, calls the right service,
+# and returns a consistent JSON response.
 def lambda_handler(event, context):
     print("Received HTTP API event:")
     print(json.dumps(event, default=str))
 
     try:
+        # Resolve the API route and build a normalized request context.
         route_key = get_route_key(event)
         request_context = build_request_context(event, route_key)
+        # Pick the service handler based on the API Gateway route.
         handler = get_route_handler(route_key)
 
+        # Execute the selected handler and wrap the result as an HTTP response.
         result = handler(event, request_context)
 
         return create_response(
@@ -100,6 +106,7 @@ def lambda_handler(event, context):
 
 
 def get_route_handler(route_key: str):
+    # Map each API Gateway route to its internal handler function.
     handlers = {
         "POST /query/tags": handle_query_tags,
         "GET /query/species": handle_query_species,
@@ -118,6 +125,7 @@ def get_route_handler(route_key: str):
     return handler
 
 
+# Handle tag-based file search.
 def handle_query_tags(event: dict, request_context: RequestContext) -> dict:
     body = parse_json_body(event)
 
@@ -132,6 +140,7 @@ def handle_query_tags(event: dict, request_context: RequestContext) -> dict:
     )
 
 
+# Handle species-based file search.
 def handle_query_species(event: dict, request_context: RequestContext) -> dict:
     species = get_required_query_param(event, "species")
 
@@ -146,6 +155,7 @@ def handle_query_species(event: dict, request_context: RequestContext) -> dict:
     )
 
 
+# Handle lookup from thumbnail URL to original file metadata.
 def handle_query_thumbnail(event: dict, request_context: RequestContext) -> dict:
     body = parse_json_body(event)
     thumbnail_url = get_required_body_field(body, "thumbnail_url")
@@ -161,6 +171,7 @@ def handle_query_thumbnail(event: dict, request_context: RequestContext) -> dict
     )
 
 
+# Handle bulk tag add/remove requests.
 def handle_bulk_tags(event: dict, request_context: RequestContext) -> dict:
     body = parse_json_body(event)
 
@@ -174,6 +185,7 @@ def handle_bulk_tags(event: dict, request_context: RequestContext) -> dict:
     )
 
 
+# Handle file deletion requests.
 def handle_delete_files(event: dict, request_context: RequestContext) -> dict:
     body = parse_json_body(event)
 
@@ -188,6 +200,7 @@ def handle_delete_files(event: dict, request_context: RequestContext) -> dict:
     )
 
 
+# Load required environment variables into a typed config object.
 def load_config() -> AppConfig:
     media_bucket = os.environ.get("MEDIA_BUCKET")
     media_table = os.environ.get("MEDIA_TABLE")
@@ -206,6 +219,7 @@ def load_config() -> AppConfig:
     )
 
 
+# Cache config across warm Lambda invocations.
 def get_config() -> AppConfig:
     global _config
 
@@ -215,6 +229,7 @@ def get_config() -> AppConfig:
     return _config
 
 
+# Cache the DynamoDB table resource across warm Lambda invocations.
 def get_table():
     global _table
 
@@ -243,6 +258,7 @@ def get_route_key(event: dict) -> str:
     return f"{method} {path}"
 
 
+# Build a clean internal context from the API Gateway event.
 def build_request_context(event: dict, route_key: str) -> RequestContext:
     request_context = event.get("requestContext") or {}
     http = request_context.get("http") or {}
@@ -250,6 +266,7 @@ def build_request_context(event: dict, route_key: str) -> RequestContext:
     jwt = authorizer.get("jwt") or {}
     claims = jwt.get("claims") or {}
 
+    # Require Cognito identity for all protected media API routes.
     user_id = claims.get("sub")
 
     if not user_id:
@@ -265,6 +282,7 @@ def build_request_context(event: dict, route_key: str) -> RequestContext:
     )
 
 
+# Decode and parse the request body as JSON.
 def parse_json_body(event: dict) -> Any:
     raw_body = event.get("body")
 
@@ -280,6 +298,7 @@ def parse_json_body(event: dict) -> Any:
         raise ValidationError("Request body must be valid JSON") from error
 
 
+# Return all API responses in the same JSON format.
 def get_required_query_param(event: dict, name: str) -> str:
     query_params = event.get("queryStringParameters") or {}
     value = query_params.get(name)
@@ -316,6 +335,7 @@ def create_response(status_code: int, body: dict) -> dict:
     }
 
 
+# Convert DynamoDB Decimal values into JSON-safe numbers.
 class DecimalEncoder(json.JSONEncoder):
     def default(self, value):
         if isinstance(value, Decimal):

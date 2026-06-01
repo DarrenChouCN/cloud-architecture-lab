@@ -51,15 +51,22 @@ class UploadRequest:
     def extension(self):
         return self.filename.split(".")[-1].lower()
 
+# This Lambda initializes a file upload.
+# It validates the request, checks duplicate files by checksum,
+# saves a pending metadata record, and returns a pre-signed S3 upload URL.
 
 def lambda_handler(event, context):
     try:
+        # Extract the authenticated user from the API Gateway authorizer.
         user_id = get_user_id(event)
+
+        # Parse and validate the upload request before creating any AWS resources.
         body = json.loads(event["body"])
         upload = UploadRequest.from_body(body)
 
         validate_request(upload)
 
+        # Check whether the same file has already been uploaded by checksum.
         existing_file = find_existing_file(upload.checksum)
         if existing_file:
             return json_response(200, {
@@ -69,9 +76,11 @@ def lambda_handler(event, context):
                 "object_key": existing_file["object_key"],
             })
 
+        # Generate a unique file ID and build the final S3 object path.
         file_id = str(uuid.uuid4())
         object_key = build_object_key(user_id, file_id, upload)
 
+        # Save a pending metadata record before the client uploads the file to S3.
         save_pending_record(
             user_id=user_id,
             file_id=file_id,
@@ -79,6 +88,7 @@ def lambda_handler(event, context):
             upload=upload,
         )
 
+        # Return a pre-signed URL so the client can upload directly to S3.
         upload_url = create_presigned_upload_url(
             object_key=object_key,
             content_type=upload.content_type,
@@ -144,6 +154,7 @@ def validate_request(upload: UploadRequest):
 
 
 def find_existing_file(checksum: str):
+    # Use checksum as a lookup key to detect duplicate uploads.
     result = table.get_item(
         Key={
             "pk": f"CHECKSUM#{checksum}",
@@ -157,6 +168,7 @@ def find_existing_file(checksum: str):
 
     file_id = checksum_record["file_id"]
 
+    # If a checksum record exists, fetch the real file metadata by file ID.
     file_result = table.get_item(
         Key={
             "pk": f"FILE#{file_id}",
@@ -184,6 +196,7 @@ def save_pending_record(
 ):
     now = datetime.now(timezone.utc).isoformat()
 
+    # Main file metadata item.
     file_record = {
         "pk": f"FILE#{file_id}",
         "sk": "METADATA",
@@ -201,6 +214,7 @@ def save_pending_record(
         "updated_at": now,
     }
 
+    # Secondary lookup item used for duplicate detection.
     checksum_record = {
         "pk": f"CHECKSUM#{upload.checksum}",
         "sk": "METADATA",
@@ -214,6 +228,7 @@ def save_pending_record(
 
 
 def create_presigned_upload_url(object_key: str, content_type: str):
+    # The URL is valid for 15 minutes and only allows uploading this object.
     return s3.generate_presigned_url(
         ClientMethod="put_object",
         Params={

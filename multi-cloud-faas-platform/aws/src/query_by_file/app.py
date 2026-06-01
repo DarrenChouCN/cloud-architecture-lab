@@ -13,10 +13,14 @@ s3 = boto3.client("s3")
 dynamodb = boto3.resource("dynamodb")
 
 
+# This Lambda supports query-by-file search.
+# It uploads the query file temporarily, asks Azure to detect tags,
+# searches existing completed media by those tags, and cleans up the temp file.
 def lambda_handler(event, context):
     temp_key = None
 
     try:
+        # Read the authenticated user and parse the uploaded query file.
         claims = event.get("requestContext", {}).get("authorizer", {}).get("jwt", {}).get("claims", {})
         user_id = claims.get("sub", "anonymous")
 
@@ -25,6 +29,7 @@ def lambda_handler(event, context):
         filename = body.get("filename", "query-file")
         content_type = body.get("content_type", "application/octet-stream")
         file_type = body.get("file_type") or infer_file_type(content_type)
+        # Decode the uploaded file and store it temporarily in S3.
         file_bytes = decode_base64_file(body.get("data_base64"))
 
         query_id = str(uuid.uuid4())
@@ -32,6 +37,7 @@ def lambda_handler(event, context):
 
         upload_temp_file(temp_key, file_bytes, content_type)
 
+        # Send a temporary file URL to Azure for analysis.
         file_url = create_presigned_url(temp_key)
 
         azure_result = analyze_query_file(
@@ -40,6 +46,7 @@ def lambda_handler(event, context):
             file_url=file_url,
         )
 
+        # Use detected tags to find matching completed files.
         detected_tags = normalize_tags(azure_result.get("tags", {}))
         matched_files = find_matching_files(detected_tags)
 
@@ -61,6 +68,7 @@ def lambda_handler(event, context):
             "error_code": "query_by_file_failed",
         })
 
+    # Always delete the temporary query file after processing.
     finally:
         if temp_key:
             delete_temp_file(temp_key)

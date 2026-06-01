@@ -4,20 +4,28 @@ from boto3.dynamodb.conditions import Attr
 
 from app import ValidationError
 
+# This service deletes media files requested by URL.
+# It converts URLs to S3 object keys, finds matching metadata records,
+# deletes the related S3 objects, and then removes the DynamoDB records.
 
 def delete_files(body, request_context, config, table, s3_client) -> dict:
+    # Parse the requested file URLs from the request body.
     urls = parse_urls(body)
 
+    # Convert each public file URL back to its S3 object key.
     object_keys = {
         extract_s3_key(url, config.media_bucket)
         for url in urls
     }
 
+    # Find the DynamoDB metadata records that match these S3 object keys.
     items = find_items_by_object_keys(table, object_keys)
 
     deleted_files = []
     matched_keys = set()
 
+    # Delete all S3 objects related to each matched file,
+    # then remove its metadata record from DynamoDB.
     for item in items:
         item_keys = get_item_object_keys(item)
         matched_keys.update(item_keys.intersection(object_keys))
@@ -38,6 +46,7 @@ def delete_files(body, request_context, config, table, s3_client) -> dict:
             "deleted_object_keys": deleted_object_keys,
         })
 
+    # Report which requested files were deleted and which were not found.
     not_found = sorted(object_keys - matched_keys)
 
     return {

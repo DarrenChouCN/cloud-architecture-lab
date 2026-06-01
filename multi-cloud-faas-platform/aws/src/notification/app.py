@@ -9,17 +9,24 @@ sns = boto3.client("sns")
 deserializer = TypeDeserializer()
 
 
+# This Lambda listens to DynamoDB Streams.
+# When a completed media record gets new or changed tags,
+# it publishes a notification event to SNS.
 def lambda_handler(event, context):
     published = 0
     skipped = 0
 
+    # Process DynamoDB Stream records and publish only meaningful tag updates.
     for record in event.get("Records", []):
         try:
+            # Skip records that are not completed media metadata changes.
             if not should_publish(record):
                 skipped += 1
                 continue
 
+            # Convert DynamoDB Stream format back to a normal Python dictionary.
             item = deserialize_image(record["dynamodb"]["NewImage"])
+            # Publish a media tagged event to SNS.
             publish_media_tagged_event(item)
             published += 1
 

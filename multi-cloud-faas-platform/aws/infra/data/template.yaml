@@ -22,22 +22,27 @@ Resources:
 
       BillingMode: PAY_PER_REQUEST
 
+      # Both pk(partition key) and sk(sort key) are String type
       AttributeDefinitions:
         - AttributeName: pk
           AttributeType: S
         - AttributeName: sk
           AttributeType: S
 
+      # The primary key of this table consists of pk and sk
       KeySchema:
         - AttributeName: pk
           KeyType: HASH
         - AttributeName: sk
           KeyType: RANGE
 
+      # Enable server-side encryption
       SSESpecification:
         SSEEnabled: true
 
+      # Enable DynamoDB Streams, which can record items' change
       StreamSpecification:
+        # Stream event contains both new and old data
         StreamViewType: NEW_AND_OLD_IMAGES
 
       Tags:

@@ -43,29 +43,38 @@ _config = None
 _table = None
 
 
+# This Lambda is triggered by S3 uploads.
+# It sends the original media file to Azure for analysis,
+# stores the result in DynamoDB, and saves a thumbnail if available.
 def lambda_handler(event, context):
     print("Received S3 event:")
     print(json.dumps(event))
 
     results = []
 
+    # Process each uploaded S3 object from the event.
     for record in event.get("Records", []):
         uploaded = None
 
         try:
+            # Parse the S3 object path and extract file metadata from it.
             uploaded = parse_s3_record(record)
 
+            # Only process original image/video uploads.
             if not should_process(uploaded):
                 print(f"Skipped object: {uploaded.object_key}")
                 continue
 
+            # Load the pending file record before starting ML processing.
             file_record = get_file_record(uploaded.file_id)
 
             if not file_record:
                 raise ValueError(f"No DynamoDB record found for file_id={uploaded.file_id}")
 
+            # Mark the file as processing before calling Azure.
             mark_file_as_processing(uploaded.file_id)
 
+            # Give Azure temporary access to read the uploaded file.
             file_url = create_presigned_get_url(
                 bucket=uploaded.bucket,
                 object_key=uploaded.object_key,
@@ -76,16 +85,19 @@ def lambda_handler(event, context):
                 file_url=file_url,
             )
 
+            # Send the file to Azure for image or video analysis.
             azure_result = send_to_azure_processing(
                 payload=payload,
                 file_type=uploaded.file_type,
             )
 
+            # Save the generated thumbnail if Azure returned one.
             thumbnail_info = handle_thumbnail_if_present(
                 uploaded=uploaded,
                 azure_result=azure_result,
             )
 
+            # Store the ML result and mark the file as completed.
             mark_file_as_completed(
                 uploaded=uploaded,
                 azure_result=azure_result,

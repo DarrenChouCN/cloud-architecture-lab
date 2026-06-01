@@ -6,11 +6,14 @@ from boto3.dynamodb.conditions import Attr
 from app import NotFoundError, ValidationError
 
 
+# This service finds completed files by matching their tags.
 def find_files_by_tags(body, request_context, config, table, s3_client) -> dict:
+    # Read the requested tags and scan all metadata records.
     requested_tags = parse_requested_tags(body)
 
     items = scan_metadata_items(table)
 
+    # Keep only completed files that contain all requested tags.
     matched_items = [
         item for item in items
         if is_completed_file(item) and matches_all_tags(item, requested_tags)
@@ -28,7 +31,9 @@ def find_files_by_tags(body, request_context, config, table, s3_client) -> dict:
     }
 
 
+# This service searches completed files by species name.
 def find_files_by_species(species, request_context, config, table, s3_client) -> dict:
+    # Normalize the species name before matching it against stored tags.
     species_name = str(species).strip().lower()
 
     if not species_name:
@@ -36,6 +41,7 @@ def find_files_by_species(species, request_context, config, table, s3_client) ->
 
     items = scan_metadata_items(table)
 
+    # Find completed files where this species appears at least once.
     matched_items = [
         item for item in items
         if is_completed_file(item) and get_tag_count(item.get("tags"), species_name) >= 1
@@ -53,7 +59,9 @@ def find_files_by_species(species, request_context, config, table, s3_client) ->
     }
 
 
+# This service finds the original file from a thumbnail URL.
 def find_file_by_thumbnail_url(thumbnail_url, request_context, config, table, s3_client) -> dict:
+    # Convert the thumbnail URL back to its S3 object key.
     thumbnail_object_key = extract_s3_key(
         value=thumbnail_url,
         bucket_name=config.media_bucket,
@@ -61,6 +69,7 @@ def find_file_by_thumbnail_url(thumbnail_url, request_context, config, table, s3
 
     items = scan_metadata_items(table)
 
+    # Find the file whose thumbnail key matches the requested URL.
     for item in items:
         if item.get("thumbnail_object_key") == thumbnail_object_key:
             return {
@@ -128,6 +137,7 @@ def parse_min_count(value) -> int:
 
 def scan_metadata_items(table) -> list:
     items = []
+    # Scan all main metadata records from DynamoDB.
     scan_kwargs = {
         "FilterExpression": Attr("sk").eq("METADATA"),
     }
@@ -192,6 +202,7 @@ def build_file_response(item: dict, config, s3_client) -> dict:
     original_object_key = item.get("original_object_key")
     thumbnail_object_key = item.get("thumbnail_object_key")
 
+    # Build temporary download URLs for the original file and thumbnail.
     original_url = create_presigned_get_url(
         object_key=original_object_key,
         config=config,
@@ -206,6 +217,7 @@ def build_file_response(item: dict, config, s3_client) -> dict:
 
     primary_url = original_url
 
+    # For images, return the thumbnail as the primary display URL.
     if file_type == "image" and thumbnail_url:
         primary_url = thumbnail_url
 

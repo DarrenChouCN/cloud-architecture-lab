@@ -56,6 +56,7 @@ Parameters:
     Description: Timeout in seconds for calling the Azure query file analysis endpoint.
 
 Resources:
+  # API Gateway v2: Compared to the REST API, it's lighter, cheaper, and easier to configure. 
   HttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
@@ -64,7 +65,7 @@ Resources:
       CorsConfiguration:
         AllowOrigins: !Ref CorsAllowedOrigins
         AllowHeaders:
-          - Authorization
+          - Authorization # core header, contains Cognito JWT
           - Content-Type
           - X-Amz-Date
           - X-Api-Key

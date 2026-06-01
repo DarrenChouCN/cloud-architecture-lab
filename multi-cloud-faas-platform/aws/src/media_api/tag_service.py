@@ -6,21 +6,26 @@ from boto3.dynamodb.conditions import Attr
 from app import ValidationError
 
 
+# This service adds or removes tags for multiple media files.
 def bulk_update_tags(body, request_context, config, table) -> dict:
+    # Parse the target file URLs, requested tags, and update operation.
     urls = parse_urls(body)
     tags_to_modify = parse_tags(body)
     operation = parse_operation(body)
 
+    # Convert file URLs back to S3 object keys for matching.
     object_keys = {
         extract_s3_key(url, config.media_bucket)
         for url in urls
     }
 
+    # Find metadata records that reference these S3 object keys.
     items = find_items_by_object_keys(table, object_keys)
 
     results = []
     matched_keys = set()
 
+    # Update tags for each matched file record.
     for item in items:
         item_keys = get_item_object_keys(item)
         matched_keys.update(item_keys.intersection(object_keys))
@@ -32,6 +37,7 @@ def bulk_update_tags(body, request_context, config, table) -> dict:
             operation=operation,
         )
 
+        # Save the updated tags back to DynamoDB.
         update_item_tags(
             table=table,
             item=item,
@@ -45,6 +51,7 @@ def bulk_update_tags(body, request_context, config, table) -> dict:
             "matched_object_keys": sorted(item_keys.intersection(object_keys)),
         })
 
+    # Report files that were requested but not found.
     not_found = sorted(object_keys - matched_keys)
 
     return {
@@ -105,6 +112,7 @@ def parse_tags(body) -> list:
     return tags
 
 
+# Accept add/remove in both numeric and text formats.
 def parse_operation(body) -> str:
     raw_operation = body.get("operation")
 
@@ -117,6 +125,7 @@ def parse_operation(body) -> str:
     raise ValidationError("operation must be 1/add or 0/remove")
 
 
+# Scan metadata records and keep the ones linked to the requested object keys.
 def find_items_by_object_keys(table, object_keys: set) -> list:
     matched_items = []
     scan_kwargs = {
@@ -140,6 +149,7 @@ def find_items_by_object_keys(table, object_keys: set) -> list:
     return matched_items
 
 
+# Apply the requested add or remove operation to the current tag set.
 def apply_tag_operation(current_tags: dict, tags_to_modify: list, operation: str) -> dict:
     updated_tags = dict(current_tags)
 
@@ -172,6 +182,7 @@ def update_item_tags(table, item: dict, tags: dict):
     )
 
 
+# Normalize stored tags into a consistent dictionary format.
 def normalize_existing_tags(tags) -> dict:
     if isinstance(tags, dict):
         normalized_tags = {}
@@ -199,6 +210,7 @@ def normalize_existing_tags(tags) -> dict:
     return {}
 
 
+# Collect all S3 object keys stored in this metadata item.
 def get_item_object_keys(item: dict) -> set:
     keys = set()
 
