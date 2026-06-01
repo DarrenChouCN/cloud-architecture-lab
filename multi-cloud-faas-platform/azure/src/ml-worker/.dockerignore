@@ -5,7 +5,7 @@ __pycache__/
 *.pyo
 
 .git/
-.gitignore
+../../../../.gitignore
 
 outputs/
 .outputs/
