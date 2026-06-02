@@ -2,14 +2,44 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Multi-Cloud FaaS Platform</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aussie EcoLens</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
-<body>
-  <h1>Multi-Cloud FaaS Platform</h1>
 
-  <p>Please sign in to continue. Test</p>
-  <button id="loginButton">Sign in with Cognito</button>
+<body class="landing-page">
+  <div class="bg-grid"></div>
+  <div class="bg-orb orb-one"></div>
+  <div class="bg-orb orb-two"></div>
+  <div class="floating-dot dot-one"></div>
+  <div class="floating-dot dot-two"></div>
+  <div class="floating-dot dot-three"></div>
+
+  <main class="landing-shell">
+    <div class="hero-icon">🐾</div>
+
+    <div class="pill">Multi-Cloud Wildlife Intelligence Platform</div>
+
+    <h1>Aussie EcoLens</h1>
+
+    <p class="hero-text">
+      Upload wildlife images and videos, detect species automatically, and search
+      your media collection through a secure multi-cloud platform.
+    </p>
+
+    <div class="feature-panel">
+      <h2>Platform Features</h2>
+
+      <div class="feature-list">
+        <div><span>1</span> Secure sign-in with Amazon Cognito</div>
+        <div><span>2</span> Upload images and videos to cloud storage</div>
+        <div><span>3</span> Detect wildlife species with Azure ML worker</div>
+        <div><span>4</span> Search, update, and manage tagged media</div>
+      </div>
+    </div>
+
+    <button id="loginButton" class="primary-action">Sign in with Cognito →</button>
+  </main>
 
   <script type="module">
     import { config } from "./js/config.js";
