@@ -3,12 +3,25 @@ import os
 
 from azure.storage.blob import BlobServiceClient
 
+"""
+Utility functions for downloading ML model artifacts from Azure Blob Storage.
+
+The Docker image does not include the large .pt model files. Instead, the
+container downloads mdv5a.pt and model.pt from Azure Blob Storage at runtime.
+"""
 
 MODEL_DIR = Path(os.getenv("MODEL_DIR", "./models"))
 MODEL_FILES = ["mdv5a.pt", "model.pt"]
 
 
 def get_blob_service_client() -> BlobServiceClient:
+    """
+    Create an Azure BlobServiceClient.
+
+    The service can be authenticated either by a full connection string or by
+    a storage account name and account key passed through environment variables.
+    """
+
     connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
 
     if connection_string:
@@ -28,6 +41,14 @@ def get_blob_service_client() -> BlobServiceClient:
 
 
 def download_model_if_missing(file_name: str) -> Path:
+    """
+    Download a model file from Azure Blob Storage if it does not already exist
+    locally.
+
+    This prevents the container from downloading the same model repeatedly
+    within the same running instance.
+    """
+
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
     local_path = MODEL_DIR / file_name
@@ -56,5 +77,8 @@ def download_model_if_missing(file_name: str) -> Path:
 
 
 def ensure_models_downloaded() -> None:
+    """
+    Ensure all required model artifacts are available locally before inference.
+    """
     for file_name in MODEL_FILES:
         download_model_if_missing(file_name)

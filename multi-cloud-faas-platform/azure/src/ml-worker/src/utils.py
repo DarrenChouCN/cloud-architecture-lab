@@ -4,7 +4,10 @@ import shutil
 import requests
 import tempfile
 
-
+"""
+Shared utility functions for downloading files, detecting file suffixes, and
+encoding files for API responses.
+"""
 
 def ensure_dir(path: str | Path) -> Path:
     path = Path(path)
@@ -31,6 +34,10 @@ def get_file_suffix(file_url: str, default: str = ".jpg") -> str:
 
 
 def download_file_from_url(file_url: str, suffix: str = ".jpg") -> str:
+    """
+    Download a media file from a temporary URL and save it as a local temporary
+    file for processing.
+    """
     response = requests.get(file_url, timeout=120)
     response.raise_for_status()
 
@@ -42,6 +49,8 @@ def download_file_from_url(file_url: str, suffix: str = ".jpg") -> str:
 
 
 def encode_file_to_base64(file_path: str | Path) -> str:
+    #Encode a local file as a base64 string for JSON transport.
+
     file_path = Path(file_path)
 
     with open(file_path, "rb") as f:

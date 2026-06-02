@@ -9,13 +9,24 @@ from src.image_processor import (
 from src.model_service import classify_crops
 from src.utils import clean_dir
 
+"""
+Video processing pipeline for the wildlife ML worker.
+
+Videos are processed by extracting one frame per second. This reduces the
+amount of data processed while still following the assignment requirement.
+The extracted frames are then handled using the same detection and
+classification logic as images.
+"""
 
 OUTPUT_ROOT = Path("./outputs")
 
 
 def extract_one_frame_per_second(video_path: str, output_dir: str | Path) -> list[Path]:
     """
-    Extract one frame per second from a video.
+    Extract one frame per second from the input video.
+
+    The assignment requires 1 FPS extraction instead of processing every video
+    frame, which reduces processing time and resource usage.
     """
     output_dir = clean_dir(output_dir)
 

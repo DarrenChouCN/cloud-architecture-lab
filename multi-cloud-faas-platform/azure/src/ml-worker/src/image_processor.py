@@ -12,6 +12,14 @@ from src.utils import encode_file_to_base64
 
 import os
 
+"""
+Image processing pipeline for the wildlife ML worker.
+
+This module runs MegaDetector on an image, crops detected animal regions,
+classifies the cropped regions with the species model, and generates thumbnail
+data for the AWS backend.
+"""
+
 MD_MODEL_PATH = os.getenv("MD_MODEL_PATH", "./models/mdv5a.pt")
 OUTPUT_ROOT = Path("./outputs")
 

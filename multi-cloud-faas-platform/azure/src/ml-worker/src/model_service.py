@@ -7,6 +7,12 @@ import torchvision.transforms as transforms
 import numpy as np
 import os
 
+"""
+Species classification service.
+
+This module loads the fine-tuned species classification model and predicts the
+species label for each cropped animal image produced by MegaDetector.
+"""
 
 MODEL_PT_PATH = os.getenv("MODEL_PT_PATH", "./models/model.pt")
 
@@ -51,6 +57,8 @@ transform = transforms.Compose([
 _model = None
 
 
+# Cache the loaded model globally so repeated API calls do not reload the model
+# from disk every time.
 def load_species_model():
     global _model
 
@@ -65,6 +73,12 @@ def load_species_model():
 
 @torch.no_grad()
 def predict_species(crop_image_path: str) -> tuple[str, float]:
+    """
+    Predict the species of a cropped animal image.
+
+    Returns the scientific species name and the model confidence score.
+    """
+
     model = load_species_model()
 
     img = Image.open(crop_image_path).convert("RGB")

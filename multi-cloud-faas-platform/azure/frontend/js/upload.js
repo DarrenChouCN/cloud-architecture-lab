@@ -1,6 +1,11 @@
 import { config } from "./config.js";
 import { getAccessToken } from "./auth.js";
 
+/**
+ * Calculate the SHA-256 checksum of a selected file in the browser.
+ * The checksum is sent to the backend so duplicate uploads can be detected
+ * before the file is stored in S3.
+ */
 async function calculateSha256(file) {
   const buffer = await file.arrayBuffer();
   const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
@@ -10,6 +15,11 @@ async function calculateSha256(file) {
     .join("");
 }
 
+/**
+ * Ask the backend to initialise an upload.
+ * The backend checks the checksum and returns either a duplicated result
+ * or a presigned S3 upload URL for a new file.
+ */
 async function requestUploadInit(file) {
   const accessToken = getAccessToken();
 
@@ -42,6 +52,10 @@ async function requestUploadInit(file) {
   return data;
 }
 
+/**
+ * Upload the selected file directly to S3 using the presigned URL returned
+ * by the backend. The frontend does not need AWS credentials for this step.
+ */
 async function uploadFileToS3(file, uploadUrl) {
   const response = await fetch(uploadUrl, {
     method: "PUT",
@@ -56,6 +70,11 @@ async function uploadFileToS3(file, uploadUrl) {
   }
 }
 
+/**
+ * Initialise the upload form on the protected application page.
+ * This handles checksum calculation, duplicate checking, presigned URL upload,
+ * and status messages shown to the user.
+ */
 export function initUploadForm() {
   const fileInput = document.getElementById("fileInput");
   const uploadButton = document.getElementById("uploadButton");
@@ -75,6 +94,7 @@ export function initUploadForm() {
 
       const uploadInitResult = await requestUploadInit(file);
 
+      // If the backend detects a duplicate checksum, skip the S3 upload step.
       if (uploadInitResult.duplicated) {
         uploadResult.textContent =
           `File already exists.\n` +

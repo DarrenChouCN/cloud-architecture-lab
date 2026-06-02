@@ -1,0 +1,223 @@
+:root {
+  --bg: #f4f7f5;
+  --card: #ffffff;
+  --primary: #256d4f;
+  --primary-dark: #1d563f;
+  --accent: #e8f3ed;
+  --border: #d9e3dd;
+  --text: #1f2933;
+  --muted: #647067;
+  --danger: #b42318;
+  --shadow: 0 10px 25px rgba(31, 41, 51, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0 20px 48px;
+  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(46, 139, 101, 0.14), transparent 32%),
+    linear-gradient(135deg, #f4f7f5 0%, #eaf2ed 100%);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+body > h1 {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 34px 0 8px;
+  color: var(--primary-dark);
+  font-size: 34px;
+}
+
+body > p,
+body > button,
+body > section,
+body > hr {
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#status {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--primary);
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: var(--shadow);
+}
+
+section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+  margin-top: 22px;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow);
+}
+
+section section {
+  background: #fbfdfc;
+  border-radius: 14px;
+  box-shadow: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.25;
+}
+
+h2,
+h3 {
+  color: var(--primary-dark);
+}
+
+h2 {
+  margin-top: 0;
+}
+
+p {
+  color: var(--muted);
+}
+
+hr {
+  border: none;
+  height: 1px;
+  background: transparent;
+  margin: 10px auto;
+}
+
+strong {
+  color: var(--text);
+}
+
+#userInfo p {
+  background: var(--accent);
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: var(--text);
+  word-break: break-word;
+}
+
+input[type="text"],
+input[type="file"],
+textarea,
+select {
+  width: 100%;
+  max-width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  background: #ffffff;
+  margin: 8px 0 12px;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+button {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+button:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+#logoutButton,
+#deleteFilesButton {
+  background: var(--danger);
+}
+
+#logoutButton:hover,
+#deleteFilesButton:hover {
+  background: #8a1c13;
+}
+
+pre {
+  background: #0f172a;
+  color: #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 48px;
+  font-size: 13px;
+}
+
+/* Login page specific layout */
+body:has(#loginButton):not(:has(#uploadSection)) {
+  min-height: 100vh;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+body:has(#loginButton):not(:has(#uploadSection)) > h1,
+body:has(#loginButton):not(:has(#uploadSection)) > p,
+body:has(#loginButton):not(:has(#uploadSection)) > button {
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+}
+
+body:has(#loginButton):not(:has(#uploadSection)) > h1 {
+  background: var(--card);
+  border-radius: 22px 22px 0 0;
+  padding: 38px 38px 8px;
+  box-shadow: var(--shadow);
+}
+
+body:has(#loginButton):not(:has(#uploadSection)) > p {
+  background: var(--card);
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: 8px 38px 24px;
+}
+
+body:has(#loginButton):not(:has(#uploadSection)) > button {
+  border-radius: 0 0 22px 22px;
+  padding: 16px 38px;
+  font-size: 16px;
+}
+
+@media (max-width: 700px) {
+  body {
+    padding: 0 12px 32px;
+  }
+
+  body > h1 {
+    font-size: 28px;
+  }
+
+  section {
+    padding: 16px;
+  }
+}
