@@ -2,11 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Login Callback</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login Callback - Aussie EcoLens</title>
+  <link rel="stylesheet" href="../style.css" />
 </head>
-<body>
-  <h1>Login callback received</h1>
-  <p id="status">Exchanging authorization code for tokens...</p>
+
+<body class="callback-page">
+  <div class="bg-grid"></div>
+  <div class="bg-orb orb-one"></div>
+  <div class="bg-orb orb-two"></div>
+  <div class="floating-dot dot-one"></div>
+  <div class="floating-dot dot-two"></div>
+  <div class="floating-dot dot-three"></div>
+
+  <main class="callback-shell">
+    <div class="hero-icon">🔐</div>
+
+    <div class="pill">Secure Authentication</div>
+
+    <h1>Signing you in</h1>
+
+    <p id="status" class="hero-text">
+      Exchanging authorization code for tokens...
+    </p>
+
+    <div class="loader"></div>
+  </main>
 
   <script type="module">
     import { config } from "../js/config.js";

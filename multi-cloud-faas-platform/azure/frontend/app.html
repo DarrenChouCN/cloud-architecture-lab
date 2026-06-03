@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Multi-Cloud FaaS Platform App</title>
+  <title>Aussie EcoLens App</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
+
 <body class="app-page">
   <div class="bg-grid"></div>
   <div class="bg-orb orb-one"></div>
@@ -22,192 +23,245 @@
       </div>
     </header>
 
-  <p id="status">Checking login status...</p>
+    <p id="status">Checking login status...</p>
 
-  <section id="userInfo" style="display: none;">
-    <h2>Login Successful</h2>
+    <section id="userInfo" style="display: none;">
+      <h2>Login Successful</h2>
 
-    <p><strong>Email:</strong> <span id="email"></span></p>
-    <p><strong>First name:</strong> <span id="givenName"></span></p>
-    <p><strong>Last name:</strong> <span id="familyName"></span></p>
-    <p><strong>User ID:</strong> <span id="sub"></span></p>
+      <p><strong>Email:</strong> <span id="email"></span></p>
+      <p><strong>First name:</strong> <span id="givenName"></span></p>
+      <p><strong>Last name:</strong> <span id="familyName"></span></p>
+      <p><strong>User ID:</strong> <span id="sub"></span></p>
 
-    <button id="logoutButton">Sign out</button>
-  </section>
-
-  <hr />
-
-  <section id="uploadSection" style="display: none;">
-    <h2>Upload Media File</h2>
-
-    <p>Select an image or video file to upload.</p>
-
-    <input
-      id="fileInput"
-      type="file"
-      accept="image/jpeg,image/png,video/mp4"
-    />
-
-    <button id="uploadButton">Upload</button>
-
-    <h3>Result</h3>
-    <pre id="uploadResult">No upload yet.</pre>
-  </section>
-
-  <hr />
-
-  <section id="mediaApiSection" style="display: none;">
-    <h2>Media Search and Management</h2>
-
-    <section>
-      <h3>Find Files by Tags</h3>
-
-      <p>Enter tag requirements as JSON. Example: {"koala": 3, "wombat": 2}</p>
-
-      <textarea
-        id="queryTagsInput"
-        rows="5"
-        cols="80"
-        placeholder='{"koala": 1}'
-      ></textarea>
-
-      <br />
-      <button id="queryTagsButton">Search by Tags</button>
-
-      <h4>Result</h4>
-      <pre id="queryTagsResult">No query yet.</pre>
+      <button id="logoutButton">Sign out</button>
     </section>
 
     <hr />
 
-  <section>
-    <h3>Find Files by Query File</h3>
-
-    <p>
-      Upload a temporary image or video file. The file will be analyzed by the ML model,
-      and the detected tags will be used to search matching media files.
-    </p>
-
-    <p>
-      The query file is used only for searching. It will not be stored permanently or added to the database.
-    </p>
-
-    <input
-      id="queryByFileInput"
-      type="file"
-      accept="image/jpeg,image/png,video/mp4"
-    />
-
-    <button id="queryByFileButton">Analyze and Search</button>
-
-    <h4>Status</h4>
-    <pre id="queryByFileStatus">No query file uploaded yet.</pre>
-
-    <h4>Result</h4>
-    <pre id="queryByFileResult">No result yet.</pre>
-  </section>
-
-    <hr />
-
-    <section>
-      <h3>Find Files by Species</h3>
-
-      <p>Enter one species name. Example: koala</p>
-
-      <input
-        id="querySpeciesInput"
-        type="text"
-        placeholder="koala"
-      />
-
-      <button id="querySpeciesButton">Search by Species</button>
-
-      <h4>Result</h4>
-      <pre id="querySpeciesResult">No query yet.</pre>
-    </section>
-
-    <hr />
-
-    <section>
-      <h3>Find Original File by Thumbnail URL</h3>
-
-      <p>Paste a thumbnail URL or thumbnail object key.</p>
-
-      <input
-        id="queryThumbnailInput"
-        type="text"
-        size="100"
-        placeholder="assets/user-id/image/file-id/thumbnail.jpg"
-      />
-
-      <button id="queryThumbnailButton">Find Original File</button>
-
-      <h4>Result</h4>
-      <pre id="queryThumbnailResult">No query yet.</pre>
-    </section>
-
-    <hr />
-
-    <section>
-      <h3>Bulk Add or Remove Tags</h3>
-
-      <p>Enter file URLs or object keys, one per line.</p>
-
-      <textarea
-        id="bulkUrlsInput"
-        rows="5"
-        cols="80"
-        placeholder="assets/user-id/image/file-id/original.jpg"
-      ></textarea>
-
-      <p>Enter tags, separated by commas. Example: koala, animal, test</p>
-
-      <input
-        id="bulkTagsInput"
-        type="text"
-        size="80"
-        placeholder="koala, animal"
-      />
+    <section id="uploadSection" style="display: none;">
+      <h2>Upload Media File</h2>
 
       <p>
-        <label for="bulkOperationInput">Operation:</label>
-        <select id="bulkOperationInput">
-          <option value="add">Add tags</option>
-          <option value="remove">Remove tags</option>
-        </select>
+        Select an image or video file to upload. The system will first check
+        whether the same file already exists using a checksum. If it is a new
+        file, it will be uploaded to S3 and processed automatically by the ML worker.
       </p>
 
-      <button id="bulkTagsButton">Submit Bulk Tag Update</button>
+      <p class="helper-text">
+        Supported formats: JPG, PNG, and MP4. After processing, the system will
+        generate species tags and, for images, a thumbnail preview.
+      </p>
 
-      <h4>Result</h4>
-      <pre id="bulkTagsResult">No update yet.</pre>
+      <input
+        id="fileInput"
+        type="file"
+        accept="image/jpeg,image/png,video/mp4"
+      />
+
+      <button id="uploadButton">Upload</button>
+
+      <h3>Upload Result</h3>
+      <pre id="uploadResult">No upload yet.</pre>
     </section>
 
     <hr />
 
-    <section>
-      <h3>Delete Files</h3>
+    <section id="mediaApiSection" style="display: none;">
+      <h2>Media Search and Management</h2>
 
-      <p>Enter file URLs or object keys, one per line. This will delete S3 objects and DynamoDB metadata.</p>
+      <p class="helper-text">
+        Use the following tools to search existing media, analyze a temporary
+        query file, update tags, or delete stored files.
+      </p>
 
-      <textarea
-        id="deleteUrlsInput"
-        rows="5"
-        cols="80"
-        placeholder="assets/user-id/image/file-id/original.jpg"
-      ></textarea>
+      <section>
+        <h3>Find Files by Tags</h3>
 
-      <br />
-      <button id="deleteFilesButton">Delete Files</button>
+        <p>
+          Search files by required species tags and minimum counts. The query
+          uses AND logic, so all listed tag conditions must be satisfied.
+        </p>
 
-      <h4>Result</h4>
-      <pre id="deleteFilesResult">No delete request yet.</pre>
+        <p class="helper-text">
+          Example: {"koala": 3, "wombat": 2} returns files with at least
+          3 koalas and at least 2 wombats.
+        </p>
+
+        <textarea
+          id="queryTagsInput"
+          rows="5"
+          cols="80"
+          placeholder='{"koala": 1}'
+        ></textarea>
+
+        <br />
+        <button id="queryTagsButton">Search by Tags</button>
+
+        <h4>Result</h4>
+        <pre id="queryTagsResult">No query yet.</pre>
+      </section>
+
+      <hr />
+
+      <section>
+        <h3>Find Files by Query File</h3>
+
+        <p>
+          Upload a temporary image or video file. The ML worker will detect
+          species in this file and use the detected tags to find matching
+          existing media.
+        </p>
+
+        <p class="helper-text">
+          This query file is only used for searching. It will not be permanently
+          stored or added to the database.
+        </p>
+
+        <input
+          id="queryByFileInput"
+          type="file"
+          accept="image/jpeg,image/png,video/mp4"
+        />
+
+        <button id="queryByFileButton">Analyze and Search</button>
+
+        <h4>Status</h4>
+        <pre id="queryByFileStatus">No query file uploaded yet.</pre>
+
+        <h4>Result</h4>
+        <pre id="queryByFileResult">No result yet.</pre>
+      </section>
+
+      <hr />
+
+      <section>
+        <h3>Find Files by Species</h3>
+
+        <p>
+          Search all stored media that contains at least one occurrence of the
+          selected species.
+        </p>
+
+        <p class="helper-text">
+          Example: koala
+        </p>
+
+        <input
+          id="querySpeciesInput"
+          type="text"
+          placeholder="koala"
+        />
+
+        <button id="querySpeciesButton">Search by Species</button>
+
+        <h4>Result</h4>
+        <pre id="querySpeciesResult">No query yet.</pre>
+      </section>
+
+      <hr />
+
+      <section>
+        <h3>Find Original File by Thumbnail URL</h3>
+
+        <p>
+          Paste a thumbnail URL or thumbnail object key to find the corresponding
+          full-size original image.
+        </p>
+
+        <p class="helper-text">
+          This is useful when a search result only shows a thumbnail preview and
+          the user wants to retrieve the original image.
+        </p>
+
+        <input
+          id="queryThumbnailInput"
+          type="text"
+          size="100"
+          placeholder="assets/user-id/image/file-id/thumbnail.jpg"
+        />
+
+        <button id="queryThumbnailButton">Find Original File</button>
+
+        <h4>Result</h4>
+        <pre id="queryThumbnailResult">No query yet.</pre>
+      </section>
+
+      <hr />
+
+      <section>
+        <h3>Bulk Add or Remove Tags</h3>
+
+        <p>
+          Enter file URLs or object keys, one per line. Then enter the tags you
+          want to add or remove.
+        </p>
+
+        <textarea
+          id="bulkUrlsInput"
+          rows="5"
+          cols="80"
+          placeholder="assets/user-id/image/file-id/original.jpg"
+        ></textarea>
+
+        <p class="helper-text">
+          Enter tags separated by commas. Choose "Add tags" to attach new tags,
+          or "Remove tags" to delete existing tags. Missing tags will be ignored
+          when removing.
+        </p>
+
+        <input
+          id="bulkTagsInput"
+          type="text"
+          size="80"
+          placeholder="koala, animal"
+        />
+
+        <p>
+          <label for="bulkOperationInput">Operation:</label>
+          <select id="bulkOperationInput">
+            <option value="add">Add tags</option>
+            <option value="remove">Remove tags</option>
+          </select>
+        </p>
+
+        <button id="bulkTagsButton">Submit Bulk Tag Update</button>
+
+        <h4>Result</h4>
+        <pre id="bulkTagsResult">No update yet.</pre>
+      </section>
+
+      <hr />
+
+      <section>
+        <h3>Delete Files</h3>
+
+        <p>
+          Enter file URLs or object keys, one per line. This operation deletes
+          the media files from S3 and removes the related metadata from DynamoDB.
+        </p>
+
+        <p class="helper-text warning-text">
+          This action cannot be undone. Please check the file URLs carefully
+          before deleting.
+        </p>
+
+        <textarea
+          id="deleteUrlsInput"
+          rows="5"
+          cols="80"
+          placeholder="assets/user-id/image/file-id/original.jpg"
+        ></textarea>
+
+        <br />
+        <button id="deleteFilesButton">Delete Files</button>
+
+        <h4>Result</h4>
+        <pre id="deleteFilesResult">No delete request yet.</pre>
+      </section>
     </section>
-  </section>
-
-  <script type="module" src="./js/app.js"></script>
   </div>
 
   <script type="module" src="./js/app.js"></script>
 </body>
 </html>
+
