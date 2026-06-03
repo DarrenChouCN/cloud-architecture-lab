@@ -38,6 +38,110 @@ function showResult(elementId, data) {
 }
 
 /**
+ * Extract media records from different possible backend response formats.
+ * Current query-by-file response uses matched_files.
+ */
+function getResultItems(data) {
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  return data.matched_files || data.items || data.results || data.files || data.media || [];
+}
+
+/**
+ * Format tags for display in preview cards.
+ */
+function formatTagsForCard(tags) {
+  if (!tags || Object.keys(tags).length === 0) {
+    return "No tags";
+  }
+
+  return Object.entries(tags)
+    .map(([tag, count]) => `${tag}: ${count}`)
+    .join(", ");
+}
+
+/**
+ * Render thumbnail previews for image results and clickable links for videos.
+ * For images, thumbnail_url is displayed and original_url is opened when clicked.
+ */
+function renderMediaPreview(elementId, data) {
+  const container = document.getElementById(elementId);
+
+  if (!container) {
+    return;
+  }
+
+  const items = getResultItems(data);
+  container.innerHTML = "";
+
+  if (!items.length) {
+    container.textContent = "No preview items found.";
+    return;
+  }
+
+  items.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "media-card";
+
+    const fileType = item.file_type || item.type;
+    const thumbnailUrl = item.thumbnail_url || item.thumbnailUrl || item.url;
+    const originalUrl = item.original_url || item.originalUrl || item.file_url || item.url;
+    const videoUrl = item.video_url || item.file_url || item.original_url || item.url;
+
+    if (fileType === "image" && thumbnailUrl) {
+      const link = document.createElement("a");
+      link.href = originalUrl || thumbnailUrl;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.title = "Open full-size image";
+
+      const img = document.createElement("img");
+      img.src = thumbnailUrl;
+      img.alt = "Image thumbnail";
+
+      link.appendChild(img);
+      card.appendChild(link);
+
+      const caption = document.createElement("p");
+      caption.textContent = "Click thumbnail to open full-size image.";
+      card.appendChild(caption);
+    } else if (fileType === "video" && videoUrl) {
+      const link = document.createElement("a");
+      link.href = videoUrl;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = "Open video";
+      card.appendChild(link);
+    } else {
+      const link = document.createElement("a");
+      link.href = originalUrl || thumbnailUrl || videoUrl || "#";
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = "Open file";
+      card.appendChild(link);
+    }
+
+    if (item.tags) {
+      const tagText = document.createElement("p");
+      tagText.className = "media-tags";
+      tagText.textContent = `Tags: ${formatTagsForCard(item.tags)}`;
+      card.appendChild(tagText);
+    }
+
+    if (item.file_id) {
+      const fileId = document.createElement("p");
+      fileId.className = "media-file-id";
+      fileId.textContent = `File ID: ${item.file_id}`;
+      card.appendChild(fileId);
+    }
+
+    container.appendChild(card);
+  });
+}
+
+/**
  * Read multiple lines from a textarea and remove empty lines.
  * This is used for bulk operations where users provide multiple URLs or object keys.
  */
@@ -108,8 +212,10 @@ function initQueryTags() {
       });
 
       showResult("queryTagsResult", result);
+      renderMediaPreview("queryTagsPreview", result);
     } catch (error) {
       showResult("queryTagsResult", { error: error.message });
+      renderMediaPreview("queryTagsPreview", { matched_files: [] });
     }
   });
 }
@@ -131,8 +237,10 @@ function initQuerySpecies() {
       });
 
       showResult("querySpeciesResult", result);
+      renderMediaPreview("querySpeciesPreview", result);
     } catch (error) {
       showResult("querySpeciesResult", { error: error.message });
+      renderMediaPreview("querySpeciesPreview", { matched_files: [] });
     }
   });
 }
@@ -158,6 +266,7 @@ function initQueryByFile() {
       button.disabled = true;
       status.textContent = "Preparing query file...";
       showResult("queryByFileResult", {});
+      renderMediaPreview("queryByFilePreview", { matched_files: [] });
 
       const dataBase64 = await readFileAsDataUrl(file);
       const fileType = inferFileType(file);
@@ -177,10 +286,12 @@ function initQueryByFile() {
 
       status.textContent = "Query completed.";
       showResult("queryByFileResult", result);
+      renderMediaPreview("queryByFilePreview", result);
     } catch (error) {
       console.error(error);
       status.textContent = "Query failed.";
       showResult("queryByFileResult", { error: error.message });
+      renderMediaPreview("queryByFilePreview", { matched_files: [] });
     } finally {
       button.disabled = false;
     }
@@ -215,7 +326,7 @@ function initQueryThumbnail() {
 
 /**
  * Add or remove tags from multiple media records.
- * operation = 1 means add tags, operation = 0 means remove tags.
+ * operation = add means add tags, operation = remove means remove tags.
  */
 function initBulkTags() {
   document.getElementById("bulkTagsButton").addEventListener("click", async () => {
