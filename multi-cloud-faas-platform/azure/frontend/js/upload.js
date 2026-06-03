@@ -15,6 +15,16 @@ async function calculateSha256(file) {
     .join("");
 }
 
+function formatTags(tags) {
+  if (!tags || Object.keys(tags).length === 0) {
+    return "No species tags available yet.";
+  }
+
+  return Object.entries(tags)
+    .map(([species, count]) => `- ${species}: ${count}`)
+    .join("\n");
+}
+
 /**
  * Ask the backend to initialise an upload.
  * The backend checks the checksum and returns either a duplicated result
@@ -99,7 +109,9 @@ export function initUploadForm() {
         uploadResult.textContent =
           `File already exists.\n` +
           `File ID: ${uploadInitResult.file_id}\n` +
-          `Object key: ${uploadInitResult.object_key}`;
+          `Object key: ${uploadInitResult.object_key}\n\n` +
+          `Detected species:\n` +
+          formatTags(uploadInitResult.tags);
         return;
       }
 

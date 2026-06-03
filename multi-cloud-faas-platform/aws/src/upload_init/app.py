@@ -74,6 +74,9 @@ def lambda_handler(event, context):
                 "message": "File already exists",
                 "file_id": existing_file["file_id"],
                 "object_key": existing_file["object_key"],
+                "status": existing_file.get("status"),
+                "tags": existing_file.get("tags", {}),
+                "thumbnail_url": existing_file.get("thumbnail_url"),
             })
 
         # Generate a unique file ID and build the final S3 object path.
