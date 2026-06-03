@@ -109,7 +109,8 @@ export function initUploadForm() {
         uploadResult.textContent =
           `File already exists.\n` +
           `File ID: ${uploadInitResult.file_id}\n` +
-          `Object key: ${uploadInitResult.object_key}\n\n` +
+          `Object key: ${uploadInitResult.object_key}\n` +
+          `Status: ${uploadInitResult.status || "unknown"}\n\n` +
           `Detected species:\n` +
           formatTags(uploadInitResult.tags);
         return;
