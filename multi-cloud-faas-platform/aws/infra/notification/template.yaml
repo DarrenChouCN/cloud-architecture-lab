@@ -46,7 +46,7 @@ Resources:
         Variables:
           SNS_TOPIC_ARN: !Ref TagNotificationTopic
 
-      For creating Lambda execution role
+      # For creating Lambda execution role
       Policies:
         - Statement:
             - Effect: Allow
