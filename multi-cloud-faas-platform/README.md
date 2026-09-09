@@ -1,3 +1,11 @@
+```bash
+aws login --profile personal --remote
+
+ap-southeast-2
+
+aws sts get-caller-identity --profile personal
+```
+
 ## Deploy AWS Infra
 
 ```bash

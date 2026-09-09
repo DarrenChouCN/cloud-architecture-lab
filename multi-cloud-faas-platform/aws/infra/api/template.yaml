@@ -104,7 +104,7 @@ Resources:
       MemorySize: 128
 
       # For AWS Academy account
-      Role: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/LabRole"
+      # Role: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/LabRole"
 
       Environment:
         Variables:
@@ -114,19 +114,19 @@ Resources:
           PRESIGNED_URL_EXPIRES_IN: "3600"
 
       # For creating Lambda execution role
-      # Policies:
-      #   - Statement:
-      #       - Effect: Allow
-      #         Action:
-      #           - s3:PutObject
-      #         Resource: !Sub "arn:${AWS::Partition}:s3:::${StorageBucketName}/${AssetsPrefix}/*"
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:PutObject
+              Resource: !Sub "arn:${AWS::Partition}:s3:::${StorageBucketName}/${AssetsPrefix}*"
 
-      #       - Effect: Allow
-      #         Action:
-      #           - dynamodb:PutItem
-      #           - dynamodb:GetItem
-      #           - dynamodb:UpdateItem
-      #         Resource: !Ref MediaTableArn
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+                - dynamodb:GetItem
+                - dynamodb:UpdateItem
+              Resource: !Ref MediaTableArn
 
       Events:
         UploadInitRoute:
@@ -149,7 +149,7 @@ Resources:
       MemorySize: 256
 
       # For AWS Academy account
-      Role: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/LabRole"
+      # Role: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/LabRole"
 
       Environment:
         Variables:
@@ -159,26 +159,26 @@ Resources:
           PRESIGNED_URL_EXPIRES_IN: "3600"
 
       # For creating Lambda execution role
-      # Policies:
-      #   - Statement:
-      #       - Effect: Allow
-      #         Action:
-      #           - s3:GetObject
-      #           - s3:DeleteObject
-      #         Resource: !Sub "arn:${AWS::Partition}:s3:::${StorageBucketName}/${AssetsPrefix}*"
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:DeleteObject
+              Resource: !Sub "arn:${AWS::Partition}:s3:::${StorageBucketName}/${AssetsPrefix}*"
 
-      #       - Effect: Allow
-      #         Action:
-      #           - dynamodb:GetItem
-      #           - dynamodb:Query
-      #           - dynamodb:Scan
-      #           - dynamodb:UpdateItem
-      #           - dynamodb:DeleteItem
-      #           - dynamodb:BatchGetItem
-      #           - dynamodb:BatchWriteItem
-      #         Resource:
-      #           - !Ref MediaTableArn
-      #           - !Sub "${MediaTableArn}/index/*"
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:Query
+                - dynamodb:Scan
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:BatchGetItem
+                - dynamodb:BatchWriteItem
+              Resource:
+                - !Ref MediaTableArn
+                - !Sub "${MediaTableArn}/index/*"
 
       Events:
         QueryTagsRoute:
@@ -243,7 +243,7 @@ Resources:
       MemorySize: 512
 
       # For AWS Academy account
-      Role: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/LabRole"
+      # Role: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/LabRole"
 
       Environment:
         Variables:
@@ -256,23 +256,28 @@ Resources:
           QUERY_FILE_TEMP_PREFIX: "query-temp/"
           MODEL_VERSION: "current"
 
-      # Policies:
-      #   - Statement:
-      #       - Effect: Allow
-      #         Action:
-      #           - s3:PutObject
-      #           - s3:GetObject
-      #           - s3:DeleteObject
-      #         Resource: !Sub "arn:${AWS::Partition}:s3:::${StorageBucketName}/query-temp/*"
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:PutObject
+                - s3:GetObject
+                - s3:DeleteObject
+              Resource: !Sub "arn:${AWS::Partition}:s3:::${StorageBucketName}/query-temp/*"
 
-      #       - Effect: Allow
-      #         Action:
-      #           - dynamodb:GetItem
-      #           - dynamodb:Query
-      #           - dynamodb:Scan
-      #         Resource:
-      #           - !Ref MediaTableArn
-      #           - !Sub "${MediaTableArn}/index/*"
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+              Resource: !Sub "arn:${AWS::Partition}:s3:::${StorageBucketName}/${AssetsPrefix}*"
+
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:Query
+                - dynamodb:Scan
+              Resource:
+                - !Ref MediaTableArn
+                - !Sub "${MediaTableArn}/index/*"
 
       Events:
         QueryByFileRoute:

@@ -128,7 +128,7 @@ Resources:
       Timeout: 180
       MemorySize: 256
       # For AWS Academy account
-      Role: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/LabRole"
+      # Role: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/LabRole"
 
       Environment:
         Variables:
@@ -139,19 +139,19 @@ Resources:
           AZURE_REQUEST_TIMEOUT: "120"
           PRESIGNED_URL_EXPIRES_IN: "3600"
 
-      # Policies:
-      #   - Statement:
-      #       - Effect: Allow
-      #         Action:
-      #           - s3:GetObject
-      #           - s3:PutObject
-      #         Resource: !Sub "${StorageBucket.Arn}/${AssetsPrefix}*"
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:PutObject
+              Resource: !Sub "arn:${AWS::Partition}:s3:::${ProjectName}-${Environment}-storage-${AWS::AccountId}-${AWS::Region}/${AssetsPrefix}*"
 
-      #       - Effect: Allow
-      #         Action:
-      #           - dynamodb:GetItem
-      #           - dynamodb:UpdateItem
-      #         Resource: !Ref MediaTableArn
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:UpdateItem
+              Resource: !Ref MediaTableArn
 
   MediaIngestFunctionInvokePermission:
     Type: AWS::Lambda::Permission

@@ -40,27 +40,27 @@ Resources:
       MemorySize: 128
 
       # For AWS Academy account
-      Role: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/LabRole"
+      # Role: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/LabRole"
 
       Environment:
         Variables:
           SNS_TOPIC_ARN: !Ref TagNotificationTopic
 
-      # For creating Lambda execution role
-      # Policies:
-      #   - Statement:
-      #       - Effect: Allow
-      #         Action:
-      #           - sns:Publish
-      #         Resource: !Ref TagNotificationTopic
+      For creating Lambda execution role
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sns:Publish
+              Resource: !Ref TagNotificationTopic
 
-      #       - Effect: Allow
-      #         Action:
-      #           - dynamodb:DescribeStream
-      #           - dynamodb:GetRecords
-      #           - dynamodb:GetShardIterator
-      #           - dynamodb:ListStreams
-      #         Resource: !Ref MediaTableStreamArn
+            - Effect: Allow
+              Action:
+                - dynamodb:DescribeStream
+                - dynamodb:GetRecords
+                - dynamodb:GetShardIterator
+                - dynamodb:ListStreams
+              Resource: !Ref MediaTableStreamArn
 
       Events:
         MediaTableStream:
