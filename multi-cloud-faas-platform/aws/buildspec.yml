@@ -1,0 +1,69 @@
+version: 0.2
+
+env:
+  shell: bash
+  variables:
+    SAM_CLI_TELEMETRY: "0"
+    DEPLOY_REGION: "ap-southeast-2"
+    STACK_NAME: "multi-cloud-faas-dev-aws"
+    AUTH_DOMAIN_PREFIX: "darren-faas-dev-246766637759"
+
+phases:
+  install:
+    on-failure: ABORT
+    runtime-versions:
+      python: "3.12"
+    commands:
+      # Install SAM in an isolated environment.
+      - python3 -m venv /tmp/sam-cli
+      - /tmp/sam-cli/bin/pip install aws-sam-cli cfn-lint
+      - export PATH="/tmp/sam-cli/bin:$PATH"
+      - sam --version
+      - aws --version
+
+  pre_build:
+    on-failure: ABORT
+    commands:
+      # Use the CodeBuild service role credentials.
+      - aws sts get-caller-identity
+      - cd "$CODEBUILD_SRC_DIR/multi-cloud-faas-platform/aws"
+
+      # Validate the root template and every nested template.
+      - |
+        for template in template.yaml infra/*/template.yaml; do
+          echo "Validating $template"
+          sam validate \
+            --lint \
+            --template-file "$template" \
+            --region "$DEPLOY_REGION" || exit 1
+        done
+
+  build:
+    on-failure: ABORT
+    commands:
+      - cd "$CODEBUILD_SRC_DIR/multi-cloud-faas-platform/aws"
+      - sam build --template-file template.yaml
+
+      # Deploy the built application without interactive prompts.
+      - |
+        sam deploy \
+          --template-file .aws-sam/build/template.yaml \
+          --stack-name "$STACK_NAME" \
+          --region "$DEPLOY_REGION" \
+          --resolve-s3 \
+          --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
+          --no-confirm-changeset \
+          --no-fail-on-empty-changeset \
+          --no-progressbar \
+          --parameter-overrides \
+            ProjectName=multi-cloud-faas \
+            Environment=dev \
+            AuthDomainPrefix="$AUTH_DOMAIN_PREFIX"
+
+      # Print deployed endpoints and resource identifiers.
+      - |
+        aws cloudformation describe-stacks \
+          --stack-name "$STACK_NAME" \
+          --region "$DEPLOY_REGION" \
+          --query 'Stacks[0].Outputs' \
+          --output table
