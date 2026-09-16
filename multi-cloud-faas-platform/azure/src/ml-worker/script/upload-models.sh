@@ -3,7 +3,10 @@ set -euo pipefail
 
 RESOURCE_GROUP="${1:-rg-multicloud-faas-dev}"
 DEPLOYMENT_NAME="${2:-main}"
-MODEL_DIR="${3:-azure/functions/wildlife-ml-worker/models}"
+
+# Resolve the default model directory relative to this script.
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+MODEL_DIR="${3:-${SCRIPT_DIR}/../models}"
 
 ROLE_NAME="Storage Blob Data Contributor"
 MODEL_FILES=("mdv5a.pt" "model.pt")
@@ -159,7 +162,7 @@ else
     echo "Assigning ${ROLE_NAME} to current user..."
 
     az role assignment create \
-      --assignee "$USER_OBJECT_ID" \
+      --assignee-object-id "$USER_OBJECT_ID" \
       --assignee-principal-type User \
       --role "$ROLE_NAME" \
       --scope "$STORAGE_ACCOUNT_ID" \

@@ -60,7 +60,7 @@ def health():
     return {
         "status": "ok",
         "model_version": os.getenv("MODEL_VERSION", "v1"),
-        "model_loaded": True,
+        "model_files_ready": True,
         "runtime": "python",
         "service": "Azure Container Wildlife ML Worker"
     }
@@ -84,7 +84,7 @@ def process_image_endpoint(request: ProcessMediaRequest):
             file_id=request.file_id
         )
 
-        result["model_version"] = request.model_version
+        result["model_version"] = os.getenv("MODEL_VERSION", "v1")
         return result
 
     except Exception as e:
@@ -116,7 +116,7 @@ def process_video_endpoint(request: ProcessMediaRequest):
             file_id=request.file_id
         )
 
-        result["model_version"] = request.model_version
+        result["model_version"] = os.getenv("MODEL_VERSION", "v1")
         return result
 
     except Exception as e:
@@ -153,7 +153,7 @@ def analyze_query_file_endpoint(request: AnalyzeQueryFileRequest):
                 "status": "success",
                 "file_type": "image",
                 "tags": result.get("tags", {}),
-                "model_version": request.model_version
+                "model_version": os.getenv("MODEL_VERSION", "v1")
             }
 
         if request.file_type == "video":
@@ -171,7 +171,7 @@ def analyze_query_file_endpoint(request: AnalyzeQueryFileRequest):
                 "file_type": "video",
                 "tags": result.get("tags", {}),
                 "frames_processed": result.get("frames_processed", 0),
-                "model_version": request.model_version
+                "model_version": os.getenv("MODEL_VERSION", "v1")
             }
 
         raise HTTPException(
