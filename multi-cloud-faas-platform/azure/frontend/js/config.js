@@ -1,26 +1,16 @@
-/**
- * Frontend configuration for Cognito authentication and backend API access.
- *
- * These values connect the Azure Static Web App frontend with AWS Cognito
- * and Amazon API Gateway. They are not secret keys, but they should still be
- * kept consistent with the deployed cloud resources.
- */
 export const config = {
-  // Cognito Hosted UI domain used for login and logout.
-  cognitoDomain: "https://shaomin-faas-dev.auth.us-east-1.amazoncognito.com",
+  // Cognito Hosted UI for the deployed AWS environment.
+  cognitoDomain:
+    "https://darren-faas-dev-246766637759.auth.ap-southeast-2.amazoncognito.com",
 
-  // Cognito App Client ID used by the frontend authentication flow.
-  clientId: "2ffrs1pe6rlkb6jf2mpopbqhfq",
+  clientId: "4nfmtovob4c6pkph95dkvpih43",
 
-  // URL that Cognito redirects to after successful login.
-  redirectUri: "https://blue-wave-0c8589a0f.7.azurestaticapps.net/callback",
+  // The deployed origin must also be registered in Cognito.
+  redirectUri: `${window.location.origin}/callback`,
+  logoutUri: `${window.location.origin}/`,
 
-  // URL that Cognito redirects to after logout.
-  logoutUri: "https://blue-wave-0c8589a0f.7.azurestaticapps.net/",
-
-  // Main application page shown after login.
   appUrl: "/app.html",
 
-  // Amazon API Gateway base URL for protected backend API calls.
-  apiBaseUrl: "https://3iggcqp0h4.execute-api.us-east-1.amazonaws.com"
+  apiBaseUrl:
+    "https://p25vw507ok.execute-api.ap-southeast-2.amazonaws.com"
 };

@@ -1,6 +1,6 @@
 # Azure
 
-## Deploy Azure Infrastructure
+## 1. Deploy Azure Infrastructure
 
 Provision the resource group, ACR, model storage, Container Apps environment, Log Analytics, and Static Web App with Bicep. A user-assigned managed identity grants the ML worker permission to pull images from ACR.
 
@@ -43,7 +43,7 @@ Provisioned Azure resources:
 
 ![Azure resource group overview](images/azure-infra-resources.png)
 
-## Publish ML Model Artifacts
+## 2. Publish ML Model Artifacts
 
 Model artifacts are managed separately from the inference container image. This allows models to be updated without rebuilding the application image, at the cost of downloading them when a new container starts.
 
@@ -65,7 +65,7 @@ Both model artifacts in the Azure Blob Storage `models` container:
 
 ![Model artifacts in Azure Blob Storage](images/azure-model-artifacts-portal.png)
 
-## Build and Push the ML Worker Image
+## 3. Build and Push the ML Worker Image
 
 Build the ML worker image and push it to ACR before deploying it to Azure Container Apps.
 
@@ -115,7 +115,7 @@ The image uses the `latest` tag configured in the Bicep deployment parameters. M
 
 ![ML worker image pushed to ACR](images/azure-ml-worker-image-push.png)
 
-## Deploy the ML Worker to Azure Container Apps
+## 4. Deploy the ML Worker to Azure Container Apps
 
 Deploy the published image from ACR. The container downloads the model artifacts from Blob Storage during startup.
 
@@ -179,7 +179,7 @@ Container App details in the Azure portal:
 
 ![ML worker running in Azure Container Apps](images/azure-ml-worker-portal.png)
 
-## Connect AWS Lambda to the Azure ML Worker
+## 5. Connect AWS Lambda to the Azure ML Worker
 
 Use the deployed Container App's Application URL as the base address for AWS-to-Azure inference requests:
 
@@ -260,7 +260,7 @@ CodeBuild deploys the root template through `sam deploy`, allowing CloudFormatio
 
 See [root SAM template](multi-cloud-faas-platform/aws/template.yaml) and [nested infrastructure templates](multi-cloud-faas-platform/aws/infra/).
 
-The root stack and its five nested stacks show successful deployment states:
+The five nested stacks show successful deployment states:
 
 ![CloudFormation root and nested stacks](images/aws-cloudformation-stacks.png)
 
@@ -276,7 +276,7 @@ The Cognito user pool provides the identity service and token-signing keys used 
 
 ![Amazon Cognito user pool](images/aws-cognito-user-pool.png)
 
-API Gateway uses the Cognito user pool as the JWT issuer issuer and the app client ID as the expected audience. It validates the token before forwarding requests on requests on protected routes to Lambda.
+API Gateway uses the Cognito user pool as the JWT issuer and the app client ID as the expected audience. It validates the token before forwarding requests on protected routes to Lambda.
 
 See [API Gateway and Lambda infrastructure template](multi-cloud-faas-platform/aws/infra/api/template.yaml).
 
@@ -393,3 +393,40 @@ The SAM template provisions the topic and publisher. Subscription setup and mess
 See [notification infrastructure template](multi-cloud-faas-platform/aws/infra/notification/template.yaml).
 
 ![SNS topic for media tag notifications](images/aws-sns-tag-notifications.png)
+
+# Frontend Integration
+
+The frontend is hosted on Azure Static Web Apps, authenticates users through Amazon Cognito, and calls the AWS backend through API Gateway. GitHub Actions publishes the static frontend, while AWS CodePipeline deploys backend configuration changes.
+
+## 1. Configure GitHub Actions Deployment
+
+Retrieve the deployment token from **Azure Static Web App → Overview → Manage deployment token**.
+
+![Azure Static Web App deployment token configuration](images/azure-swa-deployment-token.png)
+
+Store the token in the GitHub repository under **Settings → Secrets and variables → Actions**, using the secret name `AZURE_STATIC_WEB_APPS_API_TOKEN`.
+
+![GitHub Actions deployment secret](images/github-actions-swa-secret.png)
+
+The workflow publishes the HTML, CSS, and JavaScript files directly from `multi-cloud-faas-platform/azure/frontend/`. Changes to this directory or the workflow on `main` trigger deployment. Manual deployment is also available through **Run workflow**.
+
+See [frontend deployment workflow](.github/workflows/deploy-azure-static-web.yml).
+
+## 2. Connect the Frontend to AWS
+
+The frontend configuration points to the deployed Cognito app client and API Gateway endpoint. Callback and logout URLs are derived from the website's current origin.
+
+The AWS `FrontendBaseUrl` parameter aligns Cognito callback and logout URLs with the allowed CORS origins for API Gateway and S3. CodeBuild passes this parameter explicitly during SAM deployment.
+
+| Setting | Value |
+| --- | --- |
+| Frontend URL | `https://lively-grass-044620c00.6.azurestaticapps.net` |
+| Login callback | `https://lively-grass-044620c00.6.azurestaticapps.net/callback` |
+| Logout URL | `https://lively-grass-044620c00.6.azurestaticapps.net/` |
+| API endpoint | `https://p25vw507ok.execute-api.ap-southeast-2.amazonaws.com` |
+
+Static Web Apps routes `/callback` to the token-exchange page. The page uses root-relative paths to load its stylesheet and configuration module.
+
+See [frontend configuration](multi-cloud-faas-platform/azure/frontend/js/config.js), [callback page](multi-cloud-faas-platform/azure/frontend/callback/index.html), [routing configuration](multi-cloud-faas-platform/azure/frontend/staticwebapp.config.json), [AWS root template](multi-cloud-faas-platform/aws/template.yaml), and [CodeBuild specification](multi-cloud-faas-platform/aws/buildspec.yml).
+
+Commit and push the configuration changes to trigger both deployment workflows. Login, media upload, and cross-cloud inference are verified after both deployments complete.

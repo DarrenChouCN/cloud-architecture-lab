@@ -1,12 +1,16 @@
 name: deploy-azure-static-web
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
     paths:
       - "multi-cloud-faas-platform/azure/frontend/**"
       - ".github/workflows/deploy-azure-static-web.yml"
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
@@ -24,3 +28,6 @@ jobs:
           app_location: "multi-cloud-faas-platform/azure/frontend"
           api_location: ""
           output_location: ""
+          skip_app_build: true
+          skip_api_build: true
+          production_branch: "main"

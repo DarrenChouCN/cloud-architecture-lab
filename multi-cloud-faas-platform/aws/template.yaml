@@ -26,7 +26,7 @@ Parameters:
   FrontendBaseUrl:
     Type: String
     Description: Frontend base URL without trailing slash.
-    Default: https://blue-wave-0c8589a0f.7.azurestaticapps.net
+    Default: https://lively-grass-044620c00.6.azurestaticapps.net
 
   UserPoolDeletionProtection:
     Type: String

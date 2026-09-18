@@ -7,6 +7,7 @@ env:
     DEPLOY_REGION: "ap-southeast-2"
     STACK_NAME: "multi-cloud-faas-dev-aws"
     AUTH_DOMAIN_PREFIX: "darren-faas-dev-246766637759"
+    FRONTEND_BASE_URL: "https://lively-grass-044620c00.6.azurestaticapps.net"
 
 phases:
   install:
@@ -58,7 +59,8 @@ phases:
           --parameter-overrides \
             ProjectName=multi-cloud-faas \
             Environment=dev \
-            AuthDomainPrefix="$AUTH_DOMAIN_PREFIX"
+            AuthDomainPrefix="$AUTH_DOMAIN_PREFIX" \
+            FrontendBaseUrl="$FRONTEND_BASE_URL"
 
       # Print deployed endpoints and resource identifiers.
       - |
