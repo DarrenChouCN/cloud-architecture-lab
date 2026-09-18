@@ -14,4 +14,4 @@ param minReplicas = 1
 param maxReplicas = 1
 
 // Set to true after uploading both model files and pushing the container image to ACR.
-param deployMlWorker = false
+param deployMlWorker = true

@@ -47,7 +47,7 @@ Parameters:
 
   QueryFileAnalysisEndpoint:
     Type: String
-    Default: "https://wildlife-ml-worker.blackglacier-fc4a347e.australiaeast.azurecontainerapps.io/analyze-query-file"
+    Default: "https://ca-multicloud-faas-ml-dev.ambitiousisland-db4bf688.australiaeast.azurecontainerapps.io/analyze-query-file"
     Description: Azure endpoint for analyzing temporary query files.
 
   QueryFileRequestTimeout:

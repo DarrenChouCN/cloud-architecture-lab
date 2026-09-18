@@ -2,7 +2,7 @@
 
 Provision the resource group, ACR, model storage, Container Apps environment, Log Analytics, and Static Web App with Bicep. A user-assigned managed identity grants the ML worker permission to pull images from ACR.
 
-See [main.bicep](azure/infra/main.bicep), [resources.bicep](azure/infra/resources.bicep), and [deployment parameters](azure/infra/dev.bicepparam).
+See [main.bicep](multi-cloud-faas-platform/azure/infra/main.bicep), [resources.bicep](multi-cloud-faas-platform/azure/infra/resources.bicep), and [deployment parameters](multi-cloud-faas-platform/azure/infra/dev.bicepparam).
 
 ```bash
 # From the repository root
@@ -53,7 +53,7 @@ bash azure/src/ml-worker/script/upload-models.sh
 
 In production, ML pipelines typically publish versioned models to a model registry for inference services to retrieve. This lab uses a local script and Blob Storage to simulate artifact publishing and startup retrieval; model registration and version promotion are outside its scope.
 
-See [model upload script](azure/src/ml-worker/script/upload-models.sh).
+See [model upload script](multi-cloud-faas-platform/azure/src/ml-worker/script/upload-models.sh).
 
 Upload logs:
 
@@ -99,15 +99,119 @@ docker push "$ACR_SERVER/wildlife-ml-worker:latest"
 az acr repository show-tags \
   --name "$ACR_NAME" \
   --repository wildlife-ml-worker \
+  --query "[].{Image: join('', ['${ACR_SERVER}/wildlife-ml-worker:', @])}" \
   -o table
 ```
 
 In production, CI/CD pipelines, such as Azure Pipelines, build and push images to ACR and deploy them to Azure Container Apps. This lab builds and pushes the image manually, then deploys it using Bicep.
 
-See [application source and Dockerfile](azure/src/ml-worker/).
+See [application source and Dockerfile](multi-cloud-faas-platform/azure/src/ml-worker/).
 
 The image uses the `latest` tag configured in the Bicep deployment parameters. Model files are downloaded at startup and are excluded from the image.
 
 ![ML worker image build and size](images/azure-ml-worker-image-build.png)
 
 ![ML worker image pushed to ACR](images/azure-ml-worker-image-push.png)
+
+## Deploy the ML Worker to Azure Container Apps
+
+Deploy the published image from ACR. The container downloads the model artifacts from Blob Storage during startup.
+
+In production, CI/CD pipelines typically deploy container images to Azure Container Apps. This lab runs the Bicep deployment manually to demonstrate the same deployment step.
+
+See [Container App configuration](multi-cloud-faas-platform/azure/infra/resources.bicep) and [deployment parameters](multi-cloud-faas-platform/azure/infra/dev.bicepparam).
+
+After publishing the image and both model files, update `azure/infra/dev.bicepparam`:
+
+```bicep
+// Deploy the ML worker after publishing its image and model artifacts.
+param deployMlWorker = true
+```
+
+Run from the `multi-cloud-faas-platform/` directory:
+
+```bash
+export subscription_id="$(az account show --query id -o tsv)"
+RESOURCE_GROUP="rg-multicloud-faas-dev"
+CONTAINER_APP="ca-multicloud-faas-ml-dev"
+
+# Deploy the ML worker using the existing infrastructure
+az deployment sub create \
+  --subscription "$subscription_id" \
+  --name multicloud-faas-dev \
+  --location australiaeast \
+  --template-file azure/infra/main.bicep \
+  --parameters azure/infra/dev.bicepparam \
+  --query "properties.provisioningState" \
+  -o tsv
+
+# Verify the deployed image and application status
+az containerapp show \
+  --resource-group "$RESOURCE_GROUP" \
+  --name "$CONTAINER_APP" \
+  --query "{Name:name,Provisioning:properties.provisioningState,Running:properties.runningStatus,Image:properties.template.containers[0].image}" \
+  -o table
+
+# Retrieve the application endpoint
+ACA_FQDN=$(az containerapp show \
+  --resource-group "$RESOURCE_GROUP" \
+  --name "$CONTAINER_APP" \
+  --query "properties.configuration.ingress.fqdn" \
+  -o tsv)
+
+export ACA_BASE_URL="https://${ACA_FQDN}"
+
+# Verify HTTPS access and startup readiness
+echo "$ACA_BASE_URL"
+curl --fail-with-body --show-error "${ACA_BASE_URL}/health"
+echo
+```
+
+The health endpoint should return `"status": "ok"` and `"model_files_ready": true`. This confirms startup readiness; model loading and inference are verified separately with a real image.
+
+Deployment and endpoint verification:
+
+![ACA deployment and health verification](images/azure-ml-worker-deployment-health.png)
+
+Container App details in the Azure portal:
+
+![ML worker running in Azure Container Apps](images/azure-ml-worker-portal.png)
+
+## Connect AWS Lambda to the Azure ML Worker
+
+Use the deployed Container App's Application URL as the base address for AWS-to-Azure inference requests:
+
+```text
+https://ca-multicloud-faas-ml-dev.ambitiousisland-db4bf688.australiaeast.azurecontainerapps.io
+```
+
+Update the endpoint parameter defaults in the following SAM templates.
+
+In [storage/template.yaml](multi-cloud-faas-platform/aws/infra/storage/template.yaml):
+
+```yaml
+  AzureImageProcessingEndpoint:
+    Type: String
+    Default: "https://ca-multicloud-faas-ml-dev.ambitiousisland-db4bf688.australiaeast.azurecontainerapps.io/process-image"
+    Description: Azure Container Apps endpoint for image processing.
+
+  AzureVideoProcessingEndpoint:
+    Type: String
+    Default: "https://ca-multicloud-faas-ml-dev.ambitiousisland-db4bf688.australiaeast.azurecontainerapps.io/process-video"
+    Description: Azure Container Apps endpoint for video processing.
+```
+
+In [api/template.yaml](multi-cloud-faas-platform/aws/infra/api/template.yaml):
+
+```yaml
+  QueryFileAnalysisEndpoint:
+    Type: String
+    Default: "https://ca-multicloud-faas-ml-dev.ambitiousisland-db4bf688.australiaeast.azurecontainerapps.io/analyze-query-file"
+    Description: Azure Container Apps endpoint for query-file analysis.
+```
+
+Commit and push these changes to trigger the AWS deployment pipeline. SAM passes the endpoint values into the Lambda environment variables.
+
+This connects the two clouds: AWS Lambda sends HTTPS inference requests containing temporary S3 presigned URLs; the Azure ML worker retrieves the media and returns inference results. Model artifacts remain in Azure Blob Storage.
+
+In production, service endpoints are typically managed as environment-specific configuration, for example in AWS Systems Manager Parameter Store, and injected into Lambda environment variables during deployment. This lab keeps the URLs in SAM parameter defaults for simplicity; the application code reads them from environment variables.

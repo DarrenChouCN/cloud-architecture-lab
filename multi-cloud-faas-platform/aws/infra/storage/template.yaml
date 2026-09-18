@@ -41,12 +41,12 @@ Parameters:
 
   AzureImageProcessingEndpoint:
     Type: String
-    Default: "https://wildlife-ml-worker.blackglacier-fc4a347e.australiaeast.azurecontainerapps.io/process-image"
+    Default: "https://ca-multicloud-faas-ml-dev.ambitiousisland-db4bf688.australiaeast.azurecontainerapps.io/process-image"
     Description: Azure Function endpoint for image processing
 
   AzureVideoProcessingEndpoint:
     Type: String
-    Default: "https://wildlife-ml-worker.blackglacier-fc4a347e.australiaeast.azurecontainerapps.io/process-video"
+    Default: "https://ca-multicloud-faas-ml-dev.ambitiousisland-db4bf688.australiaeast.azurecontainerapps.io/process-video"
     Description: Azure Function endpoint for video processing
 
 Resources:
