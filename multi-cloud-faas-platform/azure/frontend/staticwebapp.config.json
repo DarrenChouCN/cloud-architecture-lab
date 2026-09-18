@@ -3,10 +3,6 @@
     {
       "route": "/callback",
       "rewrite": "/callback/index.html"
-    },
-    {
-      "route": "/callback/",
-      "rewrite": "/callback/index.html"
     }
   ],
   "navigationFallback": {
