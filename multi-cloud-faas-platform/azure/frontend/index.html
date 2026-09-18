@@ -1,46 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aussie EcoLens</title>
-  <link rel="stylesheet" href="./style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#193d33">
+  <title>Wildlife, in focus · Aussie EcoLens</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="stylesheet" href="/style.css">
 </head>
 
 <body class="landing-page">
-  <div class="bg-grid"></div>
-  <div class="bg-orb orb-one"></div>
-  <div class="bg-orb orb-two"></div>
-  <div class="floating-dot dot-one"></div>
-  <div class="floating-dot dot-two"></div>
-  <div class="floating-dot dot-three"></div>
-
-  <main class="landing-shell">
-    <div class="hero-icon">🐾</div>
-
-    <div class="pill">Multi-Cloud Wildlife Intelligence Platform</div>
-
-    <h1>Aussie EcoLens</h1>
-
-    <p class="hero-text">
-      Upload wildlife images and videos, detect species automatically, and search
-      your media collection through a secure multi-cloud platform.
-    </p>
-
-    <div class="feature-panel">
-      <h2>Platform Features</h2>
-
-      <div class="feature-list">
-        <div><span>1</span> Secure sign-in with Amazon Cognito</div>
-        <div><span>2</span> Upload images and videos to cloud storage</div>
-        <div><span>3</span> Detect wildlife species with Azure ML worker</div>
-        <div><span>4</span> Search, update, and manage tagged media</div>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header"><a class="brand" href="/" aria-label="Aussie EcoLens home"><span class="brand-mark"><svg
+          class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 4C10 2 3 7 5 15c2 6 11 6 14-2 1-3 1-6 1-9Z" />
+          <path d="M4 21 16 9M9 16v-5m0 5h5" />
+        </svg></span><span>Aussie <strong>EcoLens</strong></span></a><a class="quiet-link" href="#how-it-works">How it
+      works <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 12h16m-6-6 6 6-6 6" />
+      </svg></a></header>
+  <main id="main">
+    <section class="landing-hero">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="small-line"></span> A CLOSER LOOK AT THE WILD</div>
+        <h1>Wildlife,<br>in <em>focus.</em></h1>
+        <p class="hero-description">Turn your wildlife photos and videos into a collection you can explore. Identify
+          species, organise discoveries, and find the moments that matter.</p>
+        <button id="loginButton" class="button primary hero-button">Sign in to your workspace <svg class="icon"
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 12h16m-6-6 6 6-6 6" />
+          </svg></button>
+        <p class="signin-note"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="5" y="10" width="14" height="11" rx="2" />
+            <path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2" />
+          </svg> Secure sign-in with Amazon Cognito</p>
+        <div class="hero-caption"><span>MADE FOR CURIOSITY</span>
+          <p>Less sorting. More discovering.</p>
+        </div>
       </div>
-    </div>
-
-    <button id="loginButton" class="primary-action">Sign in with Cognito →</button>
+      <div class="hero-art"><img src="/assets/landscape.svg" width="660" height="720"
+          alt="Illustrated eucalyptus landscape with layered green hills and a warm sun">
+        <div class="art-topline"><span>THE FIELD COLLECTION</span><span>01 / AUSTRALIA</span></div>
+        <div class="art-caption"><span>Nature holds the details.</span><strong>Find your next discovery.</strong></div>
+      </div>
+    </section>
+    <section class="how-section" id="how-it-works" aria-labelledby="how-title">
+      <div class="section-intro">
+        <div class="eyebrow">FROM OBSERVATION TO DISCOVERY</div>
+        <h2 id="how-title">A little clarity.<br>A bigger picture.</h2>
+      </div>
+      <div class="feature"><span class="feature-number">01</span><svg class="icon" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 16V3m-5 5 5-5 5 5M4 15v5h16v-5" />
+        </svg>
+        <h3>Bring your fieldwork.</h3>
+        <p>Add wildlife photos or videos to your collection.</p>
+      </div>
+      <div class="feature"><span class="feature-number">02</span><svg class="icon" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 4C10 2 3 7 5 15c2 6 11 6 14-2 1-3 1-6 1-9Z" />
+          <path d="M4 21 16 9M9 16v-5m0 5h5" />
+        </svg>
+        <h3>Find the species.</h3>
+        <p>Let the ML worker detect wildlife and add species tags.</p>
+      </div>
+      <div class="feature"><span class="feature-number">03</span><svg class="icon" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="10.5" cy="10.5" r="6.5" />
+          <path d="m16 16 5 5" />
+        </svg>
+        <h3>Follow your curiosity.</h3>
+        <p>Search by species, tags, or a reference image.</p>
+      </div>
+    </section>
   </main>
-
+  <footer class="site-footer"><span>Aussie EcoLens <span class="footer-dot">/</span> Wildlife
+      intelligence</span><span>Built across AWS &amp; Azure</span></footer>
   <script type="module">
     import { config } from "./js/config.js";
 
@@ -62,4 +102,5 @@
     });
   </script>
 </body>
+
 </html>

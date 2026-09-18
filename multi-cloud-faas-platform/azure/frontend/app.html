@@ -1,275 +1,367 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <title>Aussie EcoLens App</title>
-  <link rel="stylesheet" href="./style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#193d33">
+  <title>Workspace · Aussie EcoLens</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="stylesheet" href="/style.css">
 </head>
 
 <body class="app-page">
-  <div class="bg-grid"></div>
-  <div class="bg-orb orb-one"></div>
-  <div class="bg-orb orb-two"></div>
-  <div class="floating-dot dot-one"></div>
-  <div class="floating-dot dot-two"></div>
-  <div class="floating-dot dot-three"></div>
-
-  <div class="app-shell">
-    <header class="app-header">
-      <div>
-        <div class="pill">Aussie EcoLens Dashboard</div>
-        <h1>Aussie EcoLens</h1>
-        <p>Upload, tag, search, and manage wildlife media across AWS and Azure.</p>
+  <a class="skip-link" href="#workspace">Skip to workspace</a>
+  <aside class="sidebar"><a class="brand" href="/" aria-label="Aussie EcoLens home"><span class="brand-mark"><svg
+          class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 4C10 2 3 7 5 15c2 6 11 6 14-2 1-3 1-6 1-9Z" />
+          <path d="M4 21 16 9M9 16v-5m0 5h5" />
+        </svg></span><span>Aussie <strong>EcoLens</strong></span></a>
+    <div class="sidebar-label">YOUR WORKSPACE</div>
+    <nav class="workspace-nav" aria-label="Workspace"><button class="nav-item is-active" data-view="upload"
+        aria-current="page"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 16V3m-5 5 5-5 5 5M4 15v5h16v-5" />
+        </svg><span>Upload media</span><span class="nav-index">01</span></button><button class="nav-item"
+        data-view="explore"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="10.5" cy="10.5" r="6.5" />
+          <path d="m16 16 5 5" />
+        </svg><span>Explore collection</span><span class="nav-index">02</span></button><button class="nav-item"
+        data-view="manage"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 7h6m4 0h6M4 17h10m4 0h2" />
+          <circle cx="12" cy="7" r="2" />
+          <circle cx="16" cy="17" r="2" />
+        </svg><span>Manage media</span><span class="nav-index">03</span></button></nav>
+    <div class="sidebar-note"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20 4C10 2 3 7 5 15c2 6 11 6 14-2 1-3 1-6 1-9Z" />
+        <path d="M4 21 16 9M9 16v-5m0 5h5" />
+      </svg>
+      <p>A closer look<br>at the natural world.</p>
+      <div class="sidebar-rule"></div><span>WILDLIFE INTELLIGENCE<br>AWS &amp; AZURE</span>
+    </div>
+  </aside>
+  <div class="workspace-shell">
+    <header class="workspace-topbar"><span class="breadcrumb">Workspace <span>/</span> <strong
+          id="viewBreadcrumb">Upload media</strong></span><span class="workspace-label">AUSSIE ECOLENS</span></header>
+    <main id="workspace" class="workspace-content" tabindex="-1">
+      <div class="workspace-heading">
+        <div>
+          <div class="eyebrow">YOUR FIELDWORK, ORGANISED</div>
+          <h1 id="viewTitle">Every discovery starts here.</h1>
+          <p id="viewDescription">Add a photo or video. Let your wildlife collection grow.</p>
+        </div><span class="heading-emblem"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 4C10 2 3 7 5 15c2 6 11 6 14-2 1-3 1-6 1-9Z" />
+            <path d="M4 21 16 9M9 16v-5m0 5h5" />
+          </svg></span>
       </div>
-    </header>
-
-    <p id="status">Checking login status...</p>
-
-    <section id="userInfo" style="display: none;">
-      <h2>Login Successful</h2>
-
-      <p><strong>Email:</strong> <span id="email"></span></p>
-      <p><strong>First name:</strong> <span id="givenName"></span></p>
-      <p><strong>Last name:</strong> <span id="familyName"></span></p>
-      <p><strong>User ID:</strong> <span id="sub"></span></p>
-
-      <button id="logoutButton">Sign out</button>
-    </section>
-
-    <hr />
-
-    <section id="uploadSection" style="display: none;">
-      <h2>Upload Media File</h2>
-
-      <p>
-        Select an image or video file to upload. The system will first check
-        whether the same file already exists using a checksum. If it is a new
-        file, it will be uploaded to S3 and processed automatically by the ML worker.
-      </p>
-
-      <p class="helper-text">
-        Supported formats: JPG, PNG, and MP4. After processing, the system will
-        generate species tags and, for images, a thumbnail preview.
-      </p>
-
-      <input
-        id="fileInput"
-        type="file"
-        accept="image/jpeg,image/png,video/mp4"
-      />
-
-      <button id="uploadButton">Upload</button>
-
-      <h3>Upload Result</h3>
-      <pre id="uploadResult">No upload yet.</pre>
-    </section>
-
-    <hr />
-
-    <section id="mediaApiSection" style="display: none;">
-      <h2>Media Search and Management</h2>
-
-      <p class="helper-text">
-        Use the following tools to search existing media, analyze a temporary
-        query file, update tags, or delete stored files.
-      </p>
-
-      <section>
-        <h3>Find Files by Tags</h3>
-
-        <p>
-          Search files by required species tags and minimum counts. The query
-          uses AND logic, so all listed tag conditions must be satisfied.
-        </p>
-
-        <p class="helper-text">
-          Example: {"koala": 3, "wombat": 2} returns files with at least
-          3 koalas and at least 2 wombats.
-        </p>
-
-        <textarea
-          id="queryTagsInput"
-          rows="5"
-          cols="80"
-          placeholder='{"koala": 1}'
-        ></textarea>
-
-        <br />
-        <button id="queryTagsButton">Search by Tags</button>
-
-        <h4>Result</h4>
-        <pre id="queryTagsResult">No query yet.</pre>
-
-        <h4>Preview</h4>
-        <div id="queryTagsPreview" class="media-preview"></div>
+      <section id="userInfo" class="account-strip" style="display: none;" aria-label="Account">
+        <div class="account-row">
+          <details class="account-details">
+            <summary><span class="avatar"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M4 21v-2a8 8 0 0 1 16 0v2" />
+                </svg></span><span id="email"></span><svg class="icon" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+                aria-hidden="true">
+                <path d="m8 10 4 4 4-4" />
+              </svg></summary>
+            <dl>
+              <div>
+                <dt>First name</dt>
+                <dd id="givenName"></dd>
+              </div>
+              <div>
+                <dt>Last name</dt>
+                <dd id="familyName"></dd>
+              </div>
+              <div>
+                <dt>User ID</dt>
+                <dd id="sub"></dd>
+              </div>
+            </dl>
+          </details><button id="logoutButton" class="text-button"><svg class="icon" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true">
+              <path d="M9 4H4v16h5m4-8h8m-4-4 4 4-4 4" />
+            </svg> Sign out</button>
+        </div>
+        <p id="status" class="auth-status" role="status">Checking login status...</p>
       </section>
-
-      <hr />
-
-      <section>
-        <h3>Find Files by Query File</h3>
-
-        <p>
-          Upload a temporary image or video file. The ML worker will detect
-          species in this file and use the detected tags to find matching
-          existing media.
-        </p>
-
-        <p class="helper-text">
-          This query file is only used for searching. It will not be permanently
-          stored or added to the database.
-        </p>
-
-        <input
-          id="queryByFileInput"
-          type="file"
-          accept="image/jpeg,image/png,video/mp4"
-        />
-
-        <button id="queryByFileButton">Analyze and Search</button>
-
-        <h4>Status</h4>
-        <pre id="queryByFileStatus">No query file uploaded yet.</pre>
-
-        <h4>Result</h4>
-        <pre id="queryByFileResult">No result yet.</pre>
-
-        <h4>Preview</h4>
-        <div id="queryByFilePreview" class="media-preview"></div>
+      <section id="uploadSection" class="view-panel" data-panel="upload" style="display: none;"
+        aria-labelledby="upload-title">
+        <div class="upload-layout">
+          <div class="panel upload-panel">
+            <div class="panel-heading"><span class="step-label">01 / ADD TO COLLECTION</span><svg class="icon"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="3" />
+                <circle cx="8" cy="8" r="1.5" />
+                <path d="m3 17 6-6 5 5 3-3 4 4" />
+              </svg></div>
+            <h2 id="upload-title">Upload your media</h2>
+            <p>Make room for your next discovery.</p>
+            <div class="file-picker" data-picker="fileInput"><span class="file-icon"><svg class="icon"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                  stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 16V3m-5 5 5-5 5 5M4 15v5h16v-5" />
+                </svg></span><strong>Select a wildlife photo or video</strong><span class="file-picker-hint">Choose a
+                file or drop it here</span><span class="file-types">JPG, PNG or MP4</span><input id="fileInput"
+                type="file" accept="image/jpeg,image/png,video/mp4" aria-label="Select a wildlife photo or video"><span
+                class="selected-file" data-file-label="fileInput" aria-live="polite"></span></div>
+            <div class="upload-actions"><span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="5" y="10" width="14" height="11" rx="2" />
+                  <path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2" />
+                </svg> Files are stored privately</span><button id="uploadButton" class="button primary">Upload media
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M4 12h16m-6-6 6 6-6 6" />
+                </svg></button></div>
+            <div class="status-box"><span class="field-label">UPLOAD STATUS</span>
+              <pre id="uploadResult" role="status">Ready when you are. Select a file to begin.</pre>
+            </div>
+          </div>
+          <aside class="upload-guide"><span class="eyebrow">WHAT HAPPENS NEXT</span>
+            <h2>From a moment<br>to a discovery.</h2>
+            <ol class="process-list">
+              <li><span>01</span>
+                <div>
+                  <h3>Add your media</h3>
+                  <p>Choose a JPG, PNG or MP4. Existing uploads are checked for duplicates.</p>
+                </div>
+              </li>
+              <li><span>02</span>
+                <div>
+                  <h3>Identify wildlife</h3>
+                  <p>Processing starts after upload to detect species and generate tags.</p>
+                </div>
+              </li>
+              <li><span>03</span>
+                <div>
+                  <h3>Explore the results</h3>
+                  <p>Once processing finishes, search your collection by species or tags.</p>
+                </div>
+              </li>
+            </ol><button class="guide-link" data-view="explore">Explore your collection <svg class="icon"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 12h16m-6-6 6 6-6 6" />
+              </svg></button>
+            <div class="guide-art" aria-hidden="true"></div>
+          </aside>
+        </div>
       </section>
-
-      <hr />
-
-      <section>
-        <h3>Find Files by Species</h3>
-
-        <p>
-          Search all stored media that contains at least one occurrence of the
-          selected species.
-        </p>
-
-        <p class="helper-text">
-          Example: koala
-        </p>
-
-        <input
-          id="querySpeciesInput"
-          type="text"
-          placeholder="koala"
-        />
-
-        <button id="querySpeciesButton">Search by Species</button>
-
-        <h4>Result</h4>
-        <pre id="querySpeciesResult">No query yet.</pre>
-
-        <h4>Preview</h4>
-        <div id="querySpeciesPreview" class="media-preview"></div>
+      <section id="mediaApiSection" style="display:none;">
+        <section class="view-panel" data-panel="explore" hidden aria-label="Search collection">
+          <div class="search-tabs" role="tablist" aria-label="Search method"><button id="tab-species" role="tab"
+              aria-controls="search-species" aria-selected="true" data-search="species" class="is-active"><svg
+                class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 4C10 2 3 7 5 15c2 6 11 6 14-2 1-3 1-6 1-9Z" />
+                <path d="M4 21 16 9M9 16v-5m0 5h5" />
+              </svg> Species</button><button id="tab-tags" role="tab" aria-controls="search-tags" aria-selected="false"
+              tabindex="-1" data-search="tags"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 7h6m4 0h6M4 17h10m4 0h2" />
+                <circle cx="12" cy="7" r="2" />
+                <circle cx="16" cy="17" r="2" />
+              </svg> Tags &amp; counts</button><button id="tab-reference" role="tab" aria-controls="search-reference"
+              aria-selected="false" tabindex="-1" data-search="reference"><svg class="icon" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+                aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="3" />
+                <circle cx="8" cy="8" r="1.5" />
+                <path d="m3 17 6-6 5 5 3-3 4 4" />
+              </svg> Reference file</button><button id="tab-thumbnail" role="tab" aria-controls="search-thumbnail"
+              aria-selected="false" tabindex="-1" data-search="thumbnail"><svg class="icon" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+                aria-hidden="true">
+                <path d="m10 13 4-4m-6 6-2 2a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0m2 3 2-2a4 4 0 0 1 6 6l-5 5a4 4 0 0 1-6 0"
+                  transform="translate(1 1) scale(.9)" />
+              </svg> Thumbnail</button></div>
+          <div class="panel search-panel" id="search-species" role="tabpanel" aria-labelledby="tab-species"
+            data-search-panel="species"><span class="step-label">SEARCH YOUR COLLECTION</span>
+            <h2>Which species are you looking for?</h2>
+            <p>Find processed photos and videos containing a species.</p><label class="field-label"
+              for="querySpeciesInput">Species name</label>
+            <div class="input-action"><input id="querySpeciesInput" type="text" placeholder="e.g. koala"
+                autocomplete="off"><button id="querySpeciesButton" class="button primary"><svg class="icon"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                  stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="10.5" cy="10.5" r="6.5" />
+                  <path d="m16 16 5 5" />
+                </svg> Search collection</button></div>
+            <div class="result-heading">
+              <h3>Matching media</h3><span>Species search</span>
+            </div>
+            <div id="querySpeciesPreview" class="media-preview" aria-live="polite">
+              <div class="empty-state"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="3" width="7" height="7" rx="1" />
+                  <rect x="14" y="3" width="7" height="7" rx="1" />
+                  <rect x="3" y="14" width="7" height="7" rx="1" />
+                  <rect x="14" y="14" width="7" height="7" rx="1" />
+                </svg>
+                <p>Your matching media will appear here.</p><span>Run a search to explore your collection.</span>
+              </div>
+            </div>
+            <details class="response-details">
+              <summary>Response details <span>JSON</span></summary>
+              <pre id="querySpeciesResult" aria-live="polite">Your results will appear here.</pre>
+            </details>
+          </div>
+          <div class="panel search-panel" id="search-tags" role="tabpanel" aria-labelledby="tab-tags"
+            data-search-panel="tags" hidden><span class="step-label">REFINE YOUR DISCOVERY</span>
+            <h2>A more specific search.</h2>
+            <p>Find media matching every species and minimum count you specify.</p><label class="field-label"
+              for="queryTagsInput">Species and minimum counts (JSON)</label><textarea id="queryTagsInput" rows="4"
+              placeholder='{"koala": 1}' spellcheck="false" aria-describedby="tag-hint"></textarea>
+            <p class="helper-text" id="tag-hint">For example, {"koala": 2, "wombat": 1} requires at least two koalas and
+              one wombat.</p><button id="queryTagsButton" class="button primary"><svg class="icon" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+                aria-hidden="true">
+                <circle cx="10.5" cy="10.5" r="6.5" />
+                <path d="m16 16 5 5" />
+              </svg> Search by tags</button>
+            <div class="result-heading">
+              <h3>Matching media</h3><span>Tag search</span>
+            </div>
+            <div id="queryTagsPreview" class="media-preview" aria-live="polite">
+              <div class="empty-state"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="3" width="7" height="7" rx="1" />
+                  <rect x="14" y="3" width="7" height="7" rx="1" />
+                  <rect x="3" y="14" width="7" height="7" rx="1" />
+                  <rect x="14" y="14" width="7" height="7" rx="1" />
+                </svg>
+                <p>Your matching media will appear here.</p><span>Run a search to explore your collection.</span>
+              </div>
+            </div>
+            <details class="response-details">
+              <summary>Response details <span>JSON</span></summary>
+              <pre id="queryTagsResult" aria-live="polite">Your results will appear here.</pre>
+            </details>
+          </div>
+          <div class="panel search-panel" id="search-reference" role="tabpanel" aria-labelledby="tab-reference"
+            data-search-panel="reference" hidden><span class="step-label">LET AN IMAGE GUIDE YOU</span>
+            <h2>Start with a reference.</h2>
+            <p>Identify species in a reference file, then find existing media with matching tags.</p>
+            <div class="file-picker" data-picker="queryByFileInput"><span class="file-icon"><svg class="icon"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                  stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 16V3m-5 5 5-5 5 5M4 15v5h16v-5" />
+                </svg></span><strong>Choose a reference image or video</strong><span class="file-picker-hint">Choose a
+                file or drop it here</span><span class="file-types">JPG, PNG or MP4</span><input id="queryByFileInput"
+                type="file" accept="image/jpeg,image/png,video/mp4" aria-label="Choose a reference image or video"><span
+                class="selected-file" data-file-label="queryByFileInput" aria-live="polite"></span></div>
+            <div class="upload-actions"><span>Used for this search; not added to your collection.</span><button
+                id="queryByFileButton" class="button primary">Analyze &amp; search <svg class="icon" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+                  aria-hidden="true">
+                  <path d="M4 12h16m-6-6 6 6-6 6" />
+                </svg></button></div>
+            <pre id="queryByFileStatus" class="inline-status" role="status">Choose a reference file to begin.</pre>
+            <div class="result-heading">
+              <h3>Matching media</h3><span>Detected-tag search</span>
+            </div>
+            <div id="queryByFilePreview" class="media-preview" aria-live="polite">
+              <div class="empty-state"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="3" width="7" height="7" rx="1" />
+                  <rect x="14" y="3" width="7" height="7" rx="1" />
+                  <rect x="3" y="14" width="7" height="7" rx="1" />
+                  <rect x="14" y="14" width="7" height="7" rx="1" />
+                </svg>
+                <p>Your matching media will appear here.</p><span>Run a search to explore your collection.</span>
+              </div>
+            </div>
+            <details class="response-details">
+              <summary>Response details <span>JSON</span></summary>
+              <pre id="queryByFileResult" aria-live="polite">Your results will appear here.</pre>
+            </details>
+          </div>
+          <div class="panel search-panel" id="search-thumbnail" role="tabpanel" aria-labelledby="tab-thumbnail"
+            data-search-panel="thumbnail" hidden><span class="step-label">BACK TO THE ORIGINAL</span>
+            <h2>Find the full picture.</h2>
+            <p>Use a thumbnail URL or object key to locate the original media record.</p><label class="field-label"
+              for="queryThumbnailInput">Thumbnail URL or object key</label><input id="queryThumbnailInput" type="text"
+              placeholder="assets/user-id/image/file-id/thumbnail.jpg"><button id="queryThumbnailButton"
+              class="button primary spaced-button">Find original file <svg class="icon" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+                aria-hidden="true">
+                <path d="M4 12h16m-6-6 6 6-6 6" />
+              </svg></button>
+            <div class="result-heading">
+              <h3>Original media record</h3>
+            </div>
+            <pre id="queryThumbnailResult" class="record-result"
+              aria-live="polite">Enter a thumbnail reference to find its original.</pre>
+          </div>
+        </section>
+        <section class="view-panel" data-panel="manage" hidden aria-label="Manage collection">
+          <div class="management-grid">
+            <div class="panel">
+              <div class="panel-heading"><span class="step-label">CURATE YOUR COLLECTION</span><svg class="icon"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                  stroke-linejoin="round" aria-hidden="true">
+                  <path d="M4 7h6m4 0h6M4 17h10m4 0h2" />
+                  <circle cx="12" cy="7" r="2" />
+                  <circle cx="16" cy="17" r="2" />
+                </svg></div>
+              <h2>Update species tags</h2>
+              <p>Add or remove tags across selected media.</p><label class="field-label" for="bulkUrlsInput">File URLs
+                or object keys</label><textarea id="bulkUrlsInput" rows="4"
+                placeholder="One file URL or object key per line"></textarea><label class="field-label"
+                for="bulkTagsInput">Tags</label><input id="bulkTagsInput" type="text" placeholder="koala, animal">
+              <p class="helper-text">Separate tags with commas.</p><label class="field-label"
+                for="bulkOperationInput">Action</label><select id="bulkOperationInput">
+                <option value="add">Add tags</option>
+                <option value="remove">Remove tags</option>
+              </select><button id="bulkTagsButton" class="button primary spaced-button">Update tags <svg class="icon"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                  stroke-linejoin="round" aria-hidden="true">
+                  <path d="M4 12h16m-6-6 6 6-6 6" />
+                </svg></button>
+              <details class="response-details">
+                <summary>Response details <span>JSON</span></summary>
+                <pre id="bulkTagsResult" aria-live="polite">No changes made yet.</pre>
+              </details>
+            </div>
+            <div class="panel danger-panel">
+              <div class="panel-heading"><span class="step-label">COLLECTION HOUSEKEEPING</span><svg class="icon"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                  stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7" />
+                </svg></div>
+              <h2>Remove media</h2>
+              <p>Delete selected files and their metadata.</p><label class="field-label" for="deleteUrlsInput">File URLs
+                or object keys</label><textarea id="deleteUrlsInput" rows="5"
+                placeholder="One file URL or object key per line"></textarea>
+              <p class="warning-note">This action cannot be undone. Check your file references before continuing.</p>
+              <button id="deleteFilesButton" class="button danger"><svg class="icon" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+                  aria-hidden="true">
+                  <path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7" />
+                </svg> Delete selected files</button>
+              <details class="response-details">
+                <summary>Response details <span>JSON</span></summary>
+                <pre id="deleteFilesResult" aria-live="polite">No files deleted.</pre>
+              </details>
+            </div>
+          </div>
+        </section>
       </section>
-
-      <hr />
-
-      <section>
-        <h3>Find Original File by Thumbnail URL</h3>
-
-        <p>
-          Paste a thumbnail URL or thumbnail object key to find the corresponding
-          full-size original image.
-        </p>
-
-        <p class="helper-text">
-          This is useful when a search result only shows a thumbnail preview and
-          the user wants to retrieve the original image.
-        </p>
-
-        <input
-          id="queryThumbnailInput"
-          type="text"
-          size="100"
-          placeholder="assets/user-id/image/file-id/thumbnail.jpg"
-        />
-
-        <button id="queryThumbnailButton">Find Original File</button>
-
-        <h4>Result</h4>
-        <pre id="queryThumbnailResult">No query yet.</pre>
-      </section>
-
-      <hr />
-
-      <section>
-        <h3>Bulk Add or Remove Tags</h3>
-
-        <p>
-          Enter file URLs or object keys, one per line. Then enter the tags you
-          want to add or remove.
-        </p>
-
-        <textarea
-          id="bulkUrlsInput"
-          rows="5"
-          cols="80"
-          placeholder="assets/user-id/image/file-id/original.jpg"
-        ></textarea>
-
-        <p class="helper-text">
-          Enter tags separated by commas. Choose "Add tags" to attach new tags,
-          or "Remove tags" to delete existing tags. Missing tags will be ignored
-          when removing.
-        </p>
-
-        <input
-          id="bulkTagsInput"
-          type="text"
-          size="80"
-          placeholder="koala, animal"
-        />
-
-        <p>
-          <label for="bulkOperationInput">Operation:</label>
-          <select id="bulkOperationInput">
-            <option value="add">Add tags</option>
-            <option value="remove">Remove tags</option>
-          </select>
-        </p>
-
-        <button id="bulkTagsButton">Submit Bulk Tag Update</button>
-
-        <h4>Result</h4>
-        <pre id="bulkTagsResult">No update yet.</pre>
-      </section>
-
-      <hr />
-
-      <section>
-        <h3>Delete Files</h3>
-
-        <p>
-          Enter file URLs or object keys, one per line. This operation deletes
-          the media files from S3 and removes the related metadata from DynamoDB.
-        </p>
-
-        <p class="helper-text warning-text">
-          This action cannot be undone. Please check the file URLs carefully
-          before deleting.
-        </p>
-
-        <textarea
-          id="deleteUrlsInput"
-          rows="5"
-          cols="80"
-          placeholder="assets/user-id/image/file-id/original.jpg"
-        ></textarea>
-
-        <br />
-        <button id="deleteFilesButton">Delete Files</button>
-
-        <h4>Result</h4>
-        <pre id="deleteFilesResult">No delete request yet.</pre>
-      </section>
-    </section>
+      <footer class="workspace-footer"><span>Aussie EcoLens</span><span>Observe. Identify. Explore.</span></footer>
+    </main>
   </div>
-
-  <script type="module" src="./js/app.js"></script>
+  <script type="module" src="/js/app.js"></script>
+  <script type="module" src="/js/ui.js"></script>
 </body>
+
 </html>

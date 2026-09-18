@@ -1,34 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login Callback - Aussie EcoLens</title>
-  <link rel="stylesheet" href="/style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#193d33">
+  <title>Signing you in · Aussie EcoLens</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="stylesheet" href="/style.css">
 </head>
 
 <body class="callback-page">
-  <div class="bg-grid"></div>
-  <div class="bg-orb orb-one"></div>
-  <div class="bg-orb orb-two"></div>
-  <div class="floating-dot dot-one"></div>
-  <div class="floating-dot dot-two"></div>
-  <div class="floating-dot dot-three"></div>
-
-  <main class="callback-shell">
-    <div class="hero-icon">🔐</div>
-
-    <div class="pill">Secure Authentication</div>
-
-    <h1>Signing you in</h1>
-
-    <p id="status" class="hero-text">
-      Exchanging authorization code for tokens...
-    </p>
-
-    <div class="loader"></div>
+  <header class="site-header"><a class="brand" href="/" aria-label="Aussie EcoLens home"><span class="brand-mark"><svg
+          class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 4C10 2 3 7 5 15c2 6 11 6 14-2 1-3 1-6 1-9Z" />
+          <path d="M4 21 16 9M9 16v-5m0 5h5" />
+        </svg></span><span>Aussie <strong>EcoLens</strong></span></a></header>
+  <main class="callback-shell"><span class="callback-icon"><svg class="icon" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="5" y="10" width="14" height="11" rx="2" />
+        <path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2" />
+      </svg></span>
+    <div class="eyebrow">YOUR WORKSPACE AWAITS</div>
+    <h1>A moment<br>of <em>connection.</em></h1>
+    <p id="status" role="status">Exchanging authorization code for tokens...</p>
+    <div class="loader" aria-hidden="true"></div><a class="quiet-link" href="/">Back to sign in <svg class="icon"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+        stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 12h16m-6-6 6 6-6 6" />
+      </svg></a>
   </main>
-
+  <footer class="site-footer"><span>Aussie EcoLens</span><span>Wildlife, in focus.</span></footer>
   <script type="module">
     import { config } from "/js/config.js";
 
@@ -93,4 +96,5 @@
     main();
   </script>
 </body>
+
 </html>
